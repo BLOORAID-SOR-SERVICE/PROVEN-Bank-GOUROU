@@ -1,0 +1,29 @@
+.clearfix{zoom:1}.clearfix:after,.clearfix:before{content:"";display:table}.clearfix:after{clear:both}
+.form{background:#f1f1f1;padding:5rem}
+.form label{display:none}
+.form label.label--visible{display:block}
+.form input[type=email],.form input[type=number],.form input[type=tel],.form input[type=text]{background:0 0;width:100%;border:0;padding:1rem 0;font-family:RNSSanz,sans-serif}
+.form select{background:0 0;width:100%;border:0;padding:1rem 0;z-index:2;position:relative;font-family:RNSSanz,sans-serif}
+.form .form-select{position:relative}
+.form .form-select:after{content:'\e805';font-family:fontello;font-style:normal;font-weight:400;speak:never;display:inline-block;text-decoration:inherit;width:1em;margin-right:.2em;text-align:center;font-variant:normal;text-transform:none;line-height:1em;margin-left:.2em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;right:1rem;position:absolute;top:50%;-webkit-transform:TranslateY(-50%);-ms-transform:TranslateY(-50%);transform:TranslateY(-50%)}
+.form-bottom{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end}
+.form-row{border-bottom:2px solid #23282d;margin-bottom:2rem;position:relative}
+.form-row.form-row--cols{display:-webkit-box;display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap;border-bottom:0}
+.form-col{width:100%;margin-bottom:1rem}
+.form-col>input[type=email],.form-col>input[type=number],.form-col>input[type=tel],.form-col>input[type=text],.form-col>select{border-bottom:2px solid #23282d}
+.button{display:inline-block}
+.button>a,.button>button{display:inline-block;font-size:2rem;padding:1em 2em;text-align:center;-webkit-transition:.4s;transition:.4s;border:1px solid #ef4350;color:#ef4350;background:0 0;line-height:1;white-space:nowrap;font-weight:600;text-decoration:none!important;-webkit-transition:.3s;transition:.3s}
+.button>a:hover,.button>button:hover{background:#ef4350;color:#fff}
+.black.button>a,.black.button>button{color:#000;border-color:#000}
+.black.button>a:hover,.black.button>button:hover{background:#000;color:#fff}
+.color-red{color:#ef4350}
+.header-online-banking__login-form{display:none;position:absolute;top:100%;right:0;background:#fff;padding:2rem;border-radius:1rem;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:999;min-width:28rem}
+.header-online-banking:hover .header-online-banking__login-form{display:block}
+.login-form__field{margin-bottom:1.5rem}
+.login-form__field label{display:block;font-size:1.2rem;font-weight:600;color:#666;margin-bottom:.3rem}
+.login-form__field input{width:100%;padding:1rem;border:1px solid #ddd;border-radius:.4rem;font-size:1.4rem;font-family:RNSSanz,sans-serif}
+.login-form__field input:focus{outline:0;border-color:#ef4350}
+.login-form__go{display:block;width:100%;padding:1rem;background:#ef4350;color:#fff;border:0;border-radius:.4rem;font-size:1.4rem;font-weight:600;cursor:pointer;font-family:RNSSanz,sans-serif;margin-bottom:1rem}
+.login-form__go:hover{background:#d93a45}
+.login-form__register{display:block;text-align:center;font-size:1.2rem;color:#ef4350;text-decoration:none}
+.login-form__register:hover{text-decoration:underline}

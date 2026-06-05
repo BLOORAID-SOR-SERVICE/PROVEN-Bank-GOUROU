@@ -1,0 +1,17 @@
+{
+  "name": "provenbank-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "start": "node server/index.js",
+    "serve": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "better-sqlite3": "^11.9.1"
+  }
+}

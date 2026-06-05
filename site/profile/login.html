@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="js">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Client Login | PROVEN Bank</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.min.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicon/apple-touch-icon.png?02">
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        body{background:#f2f2f2;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:2rem}
+        .client-login{background:#fff;padding:4rem;max-width:40rem;width:100%;box-shadow:0 2px 20px rgba(0,0,0,.1);border-radius:1rem;text-align:center}
+        .client-login h1{font-size:2.4rem;margin-bottom:.5rem}
+        .client-login p{color:#666;margin-bottom:3rem;font-size:1.4rem}
+        .client-login .form-row{border-bottom:2px solid #23282d;margin-bottom:2rem}
+        .client-login input{width:100%;border:0;padding:1rem 0;font-size:1.6rem;font-family:RNSSanz,sans-serif;background:0 0}
+        .client-login input:focus{outline:0}
+        .client-login .error{color:#ef4350;font-size:1.3rem;margin-bottom:1rem;display:none}
+        .client-logo{font-size:3rem;font-weight:700;color:#ef4350;margin-bottom:1rem}
+        .back-link{display:inline-block;margin-top:2rem;font-size:1.3rem;color:#999;text-decoration:none}
+        .back-link:hover{color:#ef4350}
+    </style>
+
+<link rel="stylesheet" href="/assets/css/custom.css"></head>
+<body>
+    <div class="client-login">
+        <div class="client-logo">PROVEN Bank</div>
+        <h1>Client Access</h1>
+        <p>Sign in to your account</p>
+        <div class="error" id="login-error">Invalid username or password</div>
+        <form id="login-form" onsubmit="return false;">
+            <div class="form-row">
+                <input type="text" id="username" name="username" placeholder="Username" required>
+            </div>
+            <div class="form-row">
+                <input type="password" id="password" name="password" placeholder="Password" required>
+            </div>
+            <div class="form-bottom" style="justify-content:center">
+                <button type="submit" class="button black" onclick="clientLogin()"><a>Sign In</a></button>
+            </div>
+        </form>
+        <div class="form-bottom" style="justify-content:center;margin-top:1rem">
+            <a href="/create-account/" class="button" style="font-size:1.3rem"><a>Create New Account</a></a>
+        </div>
+        <a class="back-link" href="/">&larr; Back to site</a>
+    </div>
+    <script>
+    async function clientLogin() {
+        var err = document.getElementById('login-error');
+        var username = document.getElementById('username').value.trim();
+        var password = document.getElementById('password').value.trim();
+        if (!username || !password) { err.style.display = 'block'; err.textContent = 'Please fill in all fields'; return; }
+        try {
+            var res = await fetch('/api/client/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+            var data = await res.json();
+            if (res.ok) { localStorage.setItem('client', JSON.stringify(data.client)); window.location.href = '/profile/'; }
+            else { err.style.display = 'block'; err.textContent = data.error === 'Account not activated' ? 'Your account has not been activated yet. Please wait for bank approval.' : 'Invalid username or password'; }
+        } catch(e) { err.style.display = 'block'; err.textContent = 'Connection error'; }
+    }
+    </script>
+</body>
+</html>

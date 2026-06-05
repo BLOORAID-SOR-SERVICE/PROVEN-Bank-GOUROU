@@ -1,0 +1,167 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="js">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>My Account | PROVEN Bank</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.min.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicon/apple-touch-icon.png?02">
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{background:#f2f2f2;font-family:RNSSanz,sans-serif;color:#23282d;font-size:1.4rem}
+        .profile-header{background:linear-gradient(135deg,#23282d,#3a4249);color:#fff;padding:2rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+        .profile-header .greeting{font-size:1.6rem}
+        .profile-header .greeting strong{color:#ef4350}
+        .profile-header .logout{color:#fff;text-decoration:none;font-size:1.3rem;cursor:pointer;background:rgba(255,255,255,.1);padding:.5rem 1.2rem;border-radius:.4rem}
+        .profile-header .logout:hover{background:#ef4350}
+        .balance-card{background:#fff;border-radius:1rem;box-shadow:0 2px 15px rgba(0,0,0,.08);padding:2.5rem;margin-bottom:2rem;text-align:center}
+        .balance-card .label{font-size:1.3rem;color:#999;text-transform:uppercase;letter-spacing:.1em}
+        .balance-card .amount{font-size:4rem;font-weight:700;color:#23282d;margin:.5rem 0}
+        .balance-card .amount span{color:#ef4350}
+        .balance-card .account-info{font-size:1.3rem;color:#666;margin-top:.5rem}
+        .profile-layout{display:flex;min-height:calc(100vh - 7rem)}
+        .profile-sidebar{width:22rem;background:#fff;border-right:1px solid #ddd;padding:2rem 0;flex-shrink:0}
+        .profile-sidebar a{display:block;padding:1.2rem 2rem;color:#23282d;text-decoration:none;font-size:1.4rem;border-left:3px solid transparent;cursor:pointer}
+        .profile-sidebar a:hover,.profile-sidebar a.active{background:#f9f9f9;border-left-color:#ef4350;color:#ef4350}
+        .profile-main{flex:1;padding:2rem;overflow-x:auto}
+        .card{background:#fff;border-radius:.8rem;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:2rem;margin-bottom:2rem}
+        .card h2{font-size:1.8rem;margin-bottom:1.5rem}
+        .card h3{font-size:1.5rem;margin-bottom:1rem}
+        table{width:100%;border-collapse:collapse;font-size:1.3rem}
+        table th{text-align:left;padding:1rem 1.2rem;border-bottom:2px solid #eee;color:#666;font-weight:600;text-transform:uppercase;font-size:1.1rem;white-space:nowrap}
+        table td{padding:1rem 1.2rem;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+        .badge{display:inline-block;padding:.3rem .8rem;border-radius:1rem;font-size:1.1rem;font-weight:600}
+        .badge-completed{background:#d4edda;color:#155724}
+        .badge-pending{background:#fff3cd;color:#856404}
+        .btn{display:inline-block;padding:.6rem 1.4rem;font-size:1.2rem;font-weight:600;border:1px solid #ef4350;color:#ef4350;background:0 0;cursor:pointer;border-radius:.4rem;transition:.3s;text-decoration:none;font-family:RNSSanz,sans-serif}
+        .btn:hover{background:#ef4350;color:#fff}
+        .btn-black{background:#23282d;color:#fff;border-color:#23282d}
+        .btn-black:hover{background:#000}
+        .form-row{margin-bottom:1.5rem}
+        .form-row label{display:block;font-weight:600;margin-bottom:.4rem;font-size:1.3rem}
+        .form-row input,.form-row select,.form-row textarea{width:100%;padding:1rem;border:1px solid #ddd;border-radius:.4rem;font-size:1.4rem;font-family:RNSSanz,sans-serif;background:#fff}
+        .form-row input:focus,.form-row select:focus,.form-row textarea:focus{outline:0;border-color:#ef4350}
+        .form-row.half{display:flex;gap:1.5rem}
+        .form-row.half > div{flex:1}
+        .toast{position:fixed;top:2rem;right:2rem;padding:1.2rem 2rem;border-radius:.6rem;color:#fff;font-weight:600;z-index:2000;animation:slideIn .3s;max-width:40rem}
+        .toast-success{background:#28a745}
+        .toast-error{background:#dc3545}
+        @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+        .empty-state{text-align:center;padding:3rem 2rem;color:#999;font-size:1.4rem}
+        .msg-item{padding:1rem 0;border-bottom:1px solid #f0f0f0}
+        .msg-item:last-child{border-bottom:0}
+        .msg-item .msg-subject{font-weight:600;margin-bottom:.3rem}
+        .msg-item .msg-body{color:#666;margin-bottom:.3rem}
+        .msg-item .msg-date{font-size:1.1rem;color:#999}
+        .deposit-note{background:#fff3cd;color:#856404;padding:1.5rem;border-radius:.6rem;margin-bottom:2rem;font-size:1.3rem}
+        .hidden{display:none}
+    </style>
+
+<link rel="stylesheet" href="/assets/css/custom.css"></head>
+<body>
+    <div class="profile-header">
+        <div class="greeting">Welcome, <strong id="client-name">Client</strong></div>
+        <a class="logout" onclick="logout()">Sign Out</a>
+    </div>
+    <div class="profile-layout">
+        <nav class="profile-sidebar">
+            <a href="#" class="active" onclick="showSection('overview')">Overview</a>
+            <a href="#" onclick="showSection('transactions')">Transactions</a>
+            <a href="#" onclick="showSection('withdraw')">Withdraw</a>
+            <a href="#" onclick="showSection('messages')">Messages</a>
+            <a href="#" onclick="showSection('settings')">Settings</a>
+        </nav>
+        <main class="profile-main" id="main-content"></main>
+    </div>
+    <div id="toast-container"></div>
+    <script>
+    var clientData = JSON.parse(localStorage.getItem('client'));
+    if (!clientData) { window.location.href = '/profile/login.html'; }
+    var clientId = clientData.id;
+    function toast(msg, type) { type = type || 'success'; var c = document.getElementById('toast-container'); var t = document.createElement('div'); t.className = 'toast toast-' + type; t.textContent = msg; c.appendChild(t); setTimeout(function() { t.remove(); }, 4000); }
+    function logout() { localStorage.removeItem('client'); window.location.href = '/profile/login.html'; }
+    function showSection(name) {
+        document.querySelectorAll('.profile-sidebar a').forEach(function(a) { a.classList.remove('active'); });
+        var links = document.querySelectorAll('.profile-sidebar a');
+        for (var i = 0; i < links.length; i++) { if (links[i].getAttribute('href') === '#' + name) links[i].classList.add('active'); }
+        if (name === 'overview') renderOverview();
+        if (name === 'transactions') renderTransactions();
+        if (name === 'withdraw') renderWithdraw();
+        if (name === 'messages') renderMessages();
+        if (name === 'settings') renderSettings();
+    }
+    document.getElementById('client-name').textContent = clientData.first_name + ' ' + clientData.last_name;
+    function refreshClientData(cb) {
+        fetch('/api/client/data/' + clientId).then(function(r) { return r.json(); }).then(function(data) {
+            clientData = data; localStorage.setItem('client', JSON.stringify(data));
+            document.getElementById('client-name').textContent = data.first_name + ' ' + data.last_name;
+            if (cb) cb(data);
+        }).catch(function() { if (cb) cb(null); });
+    }
+    function renderOverview() {
+        var main = document.getElementById('main-content');
+        main.innerHTML = '<div class="balance-card"><div class="label">Available Balance</div><div class="amount">$<span id="overview-balance">' + (clientData.balance || 0).toFixed(2) + '</span></div><div class="account-info">' + clientData.account_type.charAt(0).toUpperCase() + clientData.account_type.slice(1) + ' Account &middot; ' + clientData.subsidiary + ' &middot; Branch: ' + clientData.branch + '</div></div><div class="deposit-note"><strong>Making a deposit?</strong> Visit any PROVEN Bank branch to deposit funds directly. Our tellers will update your balance instantly.</div><div class="card"><h2>Quick Actions</h2><div style="display:flex;gap:1rem;flex-wrap:wrap"><button class="btn" onclick="showSection(\'transactions\')">View Transactions</button><button class="btn" onclick="showSection(\'withdraw\')">Make a Withdrawal</button><button class="btn" onclick="showSection(\'messages\')">Messages</button></div></div>';
+        refreshClientData(function(data) { if (data) { document.getElementById('overview-balance').textContent = (data.balance || 0).toFixed(2); } });
+    }
+    function renderTransactions() {
+        var main = document.getElementById('main-content');
+        main.innerHTML = '<div class="card"><h2>Transaction History</h2><div id="txn-list"><div class="empty-state">Loading...</div></div></div>';
+        fetch('/api/client/transactions/' + clientId).then(function(r) { return r.json(); }).then(function(data) {
+            var el = document.getElementById('txn-list');
+            if (data.length === 0) { el.innerHTML = '<div class="empty-state">No transactions yet</div>'; return; }
+            var html = '<table><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>Status</th></tr></thead><tbody>';
+            data.forEach(function(t) {
+                var badge = t.status === 'completed' || t.status === 'approved' ? 'badge-completed' : 'badge-pending';
+                var label = t.status.charAt(0).toUpperCase() + t.status.slice(1);
+                var typeLabel = t.type.charAt(0).toUpperCase() + t.type.slice(1);
+                html += '<tr><td>' + new Date(t.created_at).toLocaleDateString() + '</td><td>' + typeLabel + '</td><td><strong>$' + Number(t.amount).toFixed(2) + '</strong></td><td>' + t.description + '</td><td><span class="badge ' + badge + '">' + label + '</span></td></tr>';
+            });
+            el.innerHTML = html + '</tbody></table>';
+        });
+    }
+    function renderWithdraw() {
+        var main = document.getElementById('main-content');
+        main.innerHTML = '<div class="card"><h2>Withdraw Funds</h2><p style="margin-bottom:2rem;color:#666;">Submit a withdrawal request. Once approved by the bank, the amount will be deducted from your balance.</p><div class="form-row"><label>Amount ($)</label><input type="number" id="withdraw-amount" step="0.01" min="0.01" placeholder="0.00"></div><button class="btn btn-black" onclick="submitWithdrawal()">Submit Withdrawal Request</button></div>';
+    }
+    function submitWithdrawal() {
+        var amount = document.getElementById('withdraw-amount').value;
+        if (!amount || Number(amount) <= 0) { toast('Please enter a valid amount', 'error'); return; }
+        if (Number(amount) > (clientData.balance || 0)) { toast('Insufficient balance', 'error'); return; }
+        fetch('/api/withdrawals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: clientId, amount: Number(amount) }) }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.success) { toast('Withdrawal request submitted. Awaiting bank approval.'); document.getElementById('withdraw-amount').value = ''; showSection('transactions'); }
+        }).catch(function() { toast('Connection error', 'error'); });
+    }
+    function renderMessages() {
+        var main = document.getElementById('main-content');
+        main.innerHTML = '<div class="card"><h2>Messages</h2><div id="msg-list"><div class="empty-state">Loading...</div></div></div>';
+        fetch('/api/messages/' + clientId).then(function(r) { return r.json(); }).then(function(data) {
+            var el = document.getElementById('msg-list');
+            if (data.length === 0) { el.innerHTML = '<div class="empty-state">No messages</div>'; return; }
+            var html = '';
+            data.forEach(function(m) { html += '<div class="msg-item"><div class="msg-subject">' + m.subject + '</div><div class="msg-body">' + m.body + '</div><div class="msg-date">' + new Date(m.created_at).toLocaleString() + '</div></div>'; });
+            el.innerHTML = html;
+        });
+    }
+    function renderSettings() {
+        var c = clientData;
+        var main = document.getElementById('main-content');
+        main.innerHTML = '<div class="card"><h2>Account Settings</h2><p style="margin-bottom:2rem;color:#666;">Update your personal information and password.</p><form id="settings-form" onsubmit="return false;"><div class="form-row half"><div><label>First Name</label><input type="text" id="s-first_name" value="' + esc(c.first_name) + '"></div><div><label>Last Name</label><input type="text" id="s-last_name" value="' + esc(c.last_name) + '"></div></div><div class="form-row half"><div><label>Date of Birth</label><input type="text" id="s-date_of_birth" value="' + esc(c.date_of_birth) + '"></div><div><label>Passport Number</label><input type="text" id="s-passport_number" value="' + esc(c.passport_number) + '"></div></div><div class="form-row"><label>Email</label><input type="email" id="s-email" value="' + esc(c.email) + '"></div><div class="form-row half"><div><label>Telephone</label><input type="tel" id="s-telephone" value="' + esc(c.telephone) + '"></div><div><label>Cellphone</label><input type="tel" id="s-cellphone" value="' + esc(c.cellphone) + '"></div></div><div class="form-row"><label>Home Address</label><input type="text" id="s-home_address" value="' + esc(c.home_address || '') + '"></div><div class="form-row half"><div><label>City</label><input type="text" id="s-home_city" value="' + esc(c.home_city || '') + '"></div><div><label>Country</label><input type="text" id="s-home_country" value="' + esc(c.home_country || '') + '"></div></div><div class="form-row"><label>Branch</label><input type="text" id="s-branch" value="' + esc(c.branch || '') + '"></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3 style="margin-bottom:1.5rem">Change Password</h3><div class="form-row"><label>New Password (min 4 characters)</label><input type="password" id="s-new_password" placeholder="Leave blank to keep current"></div><button type="submit" class="btn btn-black" onclick="saveSettings()">Save Changes</button></form></div>';
+    }
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function saveSettings() {
+        var fields = ['first_name','last_name','date_of_birth','passport_number','email','telephone','cellphone','home_address','home_city','home_country','branch'];
+        var data = {};
+        fields.forEach(function(f) { var el = document.getElementById('s-' + f); if (el) data[f] = el.value.trim(); });
+        var newPass = document.getElementById('s-new_password').value;
+        if (newPass && newPass.length >= 4) data.new_password = newPass;
+        fetch('/api/client/profile/' + clientId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(function(r) { return r.json(); }).then(function(resp) {
+            if (resp.success) { clientData = resp.client; localStorage.setItem('client', JSON.stringify(resp.client)); document.getElementById('client-name').textContent = resp.client.first_name + ' ' + resp.client.last_name; toast('Settings saved successfully'); }
+            else { toast('Error saving settings', 'error'); }
+        }).catch(function() { toast('Connection error', 'error'); });
+    }
+    showSection('overview');
+    </script>
+</body>
+</html>

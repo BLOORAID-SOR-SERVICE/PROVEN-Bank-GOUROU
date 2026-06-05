@@ -1,0 +1,278 @@
+﻿<!DOCTYPE html>
+<html lang="en-US" class="js">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Admin Dashboard | PROVEN Bank</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.min.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicon/apple-touch-icon.png?02">
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{background:#f2f2f2;font-family:RNSSanz,sans-serif;color:#23282d;font-size:1.4rem}
+        .admin-header{background:#23282d;color:#fff;padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+        .admin-header h1{font-size:1.8rem;font-weight:600}
+        .admin-header h1 span{color:#ef4350}
+        .admin-header .logout{color:#fff;text-decoration:none;font-size:1.3rem;cursor:pointer}
+        .admin-header .logout:hover{color:#ef4350}
+        .admin-layout{display:flex;min-height:calc(100vh - 5.5rem)}
+        .admin-sidebar{width:24rem;background:#fff;border-right:1px solid #ddd;padding:2rem 0;flex-shrink:0}
+        .admin-sidebar a{display:block;padding:1.2rem 2rem;color:#23282d;text-decoration:none;font-size:1.4rem;border-left:3px solid transparent;cursor:pointer}
+        .admin-sidebar a:hover,.admin-sidebar a.active{background:#f9f9f9;border-left-color:#ef4350;color:#ef4350}
+        .admin-main{flex:1;padding:2rem;overflow-x:auto}
+        .card{background:#fff;border-radius:.8rem;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:2rem;margin-bottom:2rem}
+        .card h2{font-size:1.8rem;margin-bottom:1.5rem}
+        .card h3{font-size:1.5rem;margin-bottom:1rem}
+        table{width:100%;border-collapse:collapse;font-size:1.3rem}
+        table th{text-align:left;padding:1rem 1.2rem;border-bottom:2px solid #eee;color:#666;font-weight:600;text-transform:uppercase;font-size:1.1rem;white-space:nowrap}
+        table td{padding:1rem 1.2rem;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+        table tr:hover td{background:#fafafa}
+        table tr.clickable{cursor:pointer}
+        .badge{display:inline-block;padding:.3rem .8rem;border-radius:1rem;font-size:1.1rem;font-weight:600}
+        .badge-pending{background:#fff3cd;color:#856404}
+        .badge-active{background:#d4edda;color:#155724}
+        .badge-rejected{background:#f8d7da;color:#721c24}
+        .btn{display:inline-block;padding:.6rem 1.4rem;font-size:1.2rem;font-weight:600;border:1px solid #ef4350;color:#ef4350;background:0 0;cursor:pointer;border-radius:.4rem;transition:.3s;text-decoration:none;font-family:RNSSanz,sans-serif}
+        .btn:hover{background:#ef4350;color:#fff}
+        .btn-sm{padding:.4rem 1rem;font-size:1.1rem}
+        .btn-black{background:#23282d;color:#fff;border-color:#23282d}
+        .btn-black:hover{background:#000}
+        .btn-success{background:#28a745;color:#fff;border-color:#28a745}
+        .btn-success:hover{background:#218838}
+        .btn-danger{background:#dc3545;color:#fff;border-color:#dc3545}
+        .btn-danger:hover{background:#c82333}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+        .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+        .modal-overlay.open{display:flex}
+        .modal{background:#fff;border-radius:1rem;padding:3rem;max-width:50rem;width:90%;max-height:80vh;overflow-y:auto}
+        .modal h2{font-size:1.8rem;margin-bottom:1.5rem}
+        .modal .form-row{margin-bottom:1.5rem}
+        .modal input,.modal select,.modal textarea{width:100%;padding:1rem;border:1px solid #ddd;border-radius:.4rem;font-size:1.4rem;font-family:RNSSanz,sans-serif}
+        .modal textarea{min-height:8rem;resize:vertical}
+        .modal .form-row label{display:block;font-weight:600;margin-bottom:.4rem;font-size:1.3rem}
+        .modal-actions{display:flex;gap:1rem;justify-content:flex-end;margin-top:2rem}
+        .client-detail-grid{display:grid;grid-template-columns:auto 1fr;gap:.6rem 1.5rem;font-size:1.3rem}
+        .client-detail-grid .label{font-weight:600;color:#666}
+        .filter-bar{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
+        .filter-bar input,.filter-bar select{padding:.6rem 1rem;border:1px solid #ddd;border-radius:.4rem;font-size:1.3rem;font-family:RNSSanz,sans-serif}
+        .toast{position:fixed;top:2rem;right:2rem;padding:1.2rem 2rem;border-radius:.6rem;color:#fff;font-weight:600;z-index:2000;animation:slideIn .3s;max-width:40rem}
+        .toast-success{background:#28a745}
+        .toast-error{background:#dc3545}
+        @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+        .section-title{font-size:1.6rem;font-weight:600;margin-bottom:1rem;color:#23282d;display:flex;align-items:center;gap:1rem}
+        .count-badge{background:#ef4350;color:#fff;border-radius:1rem;padding:.1rem .7rem;font-size:1.1rem}
+        .msg-item{padding:1rem 0;border-bottom:1px solid #f0f0f0;font-size:1.3rem}
+        .msg-item:last-child{border-bottom:0}
+        .msg-item .msg-subject{font-weight:600;margin-bottom:.3rem}
+        .msg-item .msg-body{color:#666;margin-bottom:.3rem}
+        .msg-item .msg-date{font-size:1.1rem;color:#999}
+        .empty-state{text-align:center;padding:4rem 2rem;color:#999;font-size:1.4rem}
+        .tabs{display:flex;gap:0;margin-bottom:2rem;border-bottom:2px solid #eee}
+        .tabs button{padding:1rem 2rem;border:0;background:0 0;font-size:1.4rem;font-weight:600;cursor:pointer;color:#666;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:RNSSanz,sans-serif}
+        .tabs button.active{color:#ef4350;border-bottom-color:#ef4350}
+        .tab-content{display:none}
+        .tab-content.active{display:block}
+        .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+        .text-right{text-align:right}
+    </style>
+
+<link rel="stylesheet" href="/assets/css/custom.css"></head>
+<body>
+    <div class="admin-header">
+        <h1>PROVEN <span>Bank</span> — Administration</h1>
+        <a class="logout" onclick="logout()">Déconnexion</a>
+    </div>
+    <div class="admin-layout">
+        <nav class="admin-sidebar">
+            <a href="#" class="active" onclick="showSection('clients')">Clients</a>
+            <a href="#" onclick="showSection('broadcast')">Diffusion</a>
+        </nav>
+        <main class="admin-main" id="main-content">
+        </main>
+    </div>
+    <div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
+    <div id="toast-container"></div>
+    <script>
+    var token = localStorage.getItem('admin_token');
+    if (!token) { window.location.href = '/admin/'; }
+    var clients = [];
+    var currentClient = null;
+    function api(path, opts) {
+        opts = opts || {};
+        opts.headers = opts.headers || {};
+        opts.headers['Content-Type'] = 'application/json';
+        opts.headers['x-admin-token'] = token;
+        return fetch(path, opts).then(function(r) {
+            if (r.status === 401) { localStorage.removeItem('admin_token'); window.location.href = '/admin/'; }
+            return r.json();
+        });
+    }
+    function logout() { localStorage.removeItem('admin_token'); window.location.href = '/admin/'; }
+    function toast(msg, type) {
+        type = type || 'success';
+        var c = document.getElementById('toast-container');
+        var t = document.createElement('div');
+        t.className = 'toast toast-' + type;
+        t.textContent = msg;
+        c.appendChild(t);
+        setTimeout(function() { t.remove(); }, 4000);
+    }
+    function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+    document.getElementById('modal-overlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    function showModal(html) { document.getElementById('modal-content').innerHTML = html; document.getElementById('modal-overlay').classList.add('open'); }
+    function showSection(name) {
+        document.querySelectorAll('.admin-sidebar a').forEach(function(a) { a.classList.remove('active'); });
+        var links = document.querySelectorAll('.admin-sidebar a');
+        for (var i = 0; i < links.length; i++) { if (links[i].getAttribute('href') === '#' + name) links[i].classList.add('active'); }
+        if (name === 'clients') renderClientList();
+        if (name === 'broadcast') renderBroadcast();
+    }
+    function renderClientList() {
+        var main = document.getElementById('main-content');
+        main.innerHTML = '<div class="card"><h2>Demandes de compte</h2><div class="filter-bar"><input type="text" id="search-input" placeholder="Rechercher..." oninput="filterClients()"><select id="status-filter" onchange="filterClients()"><option value="">Tous les statuts</option><option value="pending">En attente</option><option value="active">Actif</option><option value="rejected">Rejeté</option></select></div><div id="client-table-wrap"><div class="empty-state">Chargement...</div></div></div>';
+        api('/api/admin/clients').then(function(data) { clients = data; filterClients(); });
+    }
+    function filterClients() {
+        var q = (document.getElementById('search-input').value || '').toLowerCase();
+        var s = document.getElementById('status-filter').value;
+        var filtered = clients.filter(function(c) {
+            var match = c.first_name.toLowerCase().indexOf(q) > -1 || c.last_name.toLowerCase().indexOf(q) > -1 || c.email.toLowerCase().indexOf(q) > -1 || c.username.toLowerCase().indexOf(q) > -1;
+            if (s && c.status !== s) match = false;
+            return match;
+        });
+        if (filtered.length === 0) { document.getElementById('client-table-wrap').innerHTML = '<div class="empty-state">Aucun client trouvé</div>'; return; }
+        var html = '<table><thead><tr><th>Nom</th><th>Email</th><th>Compte</th><th>Type</th><th>Statut</th><th>Date</th><th></th></tr></thead><tbody>';
+        filtered.forEach(function(c) {
+            var badge = c.status === 'active' ? 'badge-active' : c.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
+            var label = c.status === 'active' ? 'Actif' : c.status === 'rejected' ? 'Rejeté' : 'En attente';
+            html += '<tr class="clickable" onclick="showClient(\'' + c.id + '\')">';
+            html += '<td><strong>' + c.first_name + ' ' + c.last_name + '</strong></td>';
+            html += '<td>' + c.email + '</td><td>' + c.account_type + '</td><td>' + (c.subsidiary || '-') + '</td>';
+            html += '<td><span class="badge ' + badge + '">' + label + '</span></td>';
+            html += '<td>' + new Date(c.created_at).toLocaleDateString() + '</td>';
+            html += '<td><button class="btn btn-sm" onclick="event.stopPropagation();showClient(\'' + c.id + '\')">Détails</button></td></tr>';
+        });
+        document.getElementById('client-table-wrap').innerHTML = html + '</tbody></table>';
+    }
+    function showClient(id) {
+        api('/api/admin/clients/' + id).then(function(client) {
+            currentClient = client;
+            var badge = client.status === 'active' ? 'badge-active' : client.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
+            var label = client.status === 'active' ? 'Actif' : client.status === 'rejected' ? 'Rejeté' : 'En attente';
+            var bal = (client.balance || 0).toFixed(2);
+            var html = '<div class="flex-between"><h2>' + client.first_name + ' ' + client.last_name + '</h2><button class="btn btn-sm" onclick="renderClientList()">&larr; Retour</button></div>';
+            html += '<div class="card"><div class="client-detail-grid">';
+            html += '<span class="label">ID:</span><span>' + client.id + '</span>';
+            html += '<span class="label">Prénom:</span><span>' + client.first_name + '</span>';
+            html += '<span class="label">Nom:</span><span>' + client.last_name + '</span>';
+            html += '<span class="label">Date de naissance:</span><span>' + client.date_of_birth + '</span>';
+            html += '<span class="label">Passport:</span><span>' + client.passport_number + '</span>';
+            html += '<span class="label">Email:</span><span>' + client.email + '</span>';
+            html += '<span class="label">Téléphone:</span><span>' + client.telephone + '</span>';
+            html += '<span class="label">Cellulaire:</span><span>' + client.cellphone + '</span>';
+            html += '<span class="label">Username:</span><span>' + client.username + '</span>';
+            html += '<span class="label">Type de compte:</span><span>' + client.account_type + '</span>';
+            if (client.corporate_full_name) html += '<span class="label">Raison sociale:</span><span>' + client.corporate_full_name + '</span>';
+            html += '<span class="label">Subsidiary:</span><span>' + client.subsidiary + '</span>';
+            html += '<span class="label">Branch:</span><span>' + client.branch + '</span>';
+            html += '<span class="label">Adresse:</span><span>' + client.home_address + '</span>';
+            html += '<span class="label">Ville:</span><span>' + client.home_city + '</span>';
+            html += '<span class="label">Pays:</span><span>' + client.home_country + '</span>';
+            html += '<span class="label">Solde:</span><span><strong>$' + bal + '</strong></span>';
+            html += '<span class="label">Mot de passe:</span><span>' + (client.password ? '********' : '<span style="color:#ef4350">Non défini</span>') + '</span>';
+            html += '<span class="label">Statut:</span><span><span class="badge ' + badge + '">' + label + '</span></span>';
+            html += '<span class="label">Date d\'inscription:</span><span>' + new Date(client.created_at).toLocaleString() + '</span>';
+            html += '</div></div>';
+            html += '<div class="tabs">';
+            if (client.status === 'pending') html += '<button class="active" onclick="switchTab(this,\'activate\')">Activation</button>';
+            html += '<button' + (client.status !== 'pending' ? ' class="active"' : '') + ' onclick="switchTab(this,\'finance\')">Finance</button>';
+            html += '<button onclick="switchTab(this,\'withdrawals\')">Retraits</button>';
+            html += '<button onclick="switchTab(this,\'messages\')">Messagerie</button></div>';
+            if (client.status === 'pending') {
+                html += '<div class="card tab-content active" id="tab-activate"><h3>Activer le compte</h3><p style="margin-bottom:1.5rem;color:#666;">Définissez un mot de passe par défaut pour le client et activez son compte.</p><div class="form-row"><label>Mot de passe par défaut</label><input type="text" id="activate-password" value="default123"></div><button class="btn btn-success" onclick="activateAccount(\'' + client.id + '\')">Activer le compte</button></div>';
+            }
+            html += '<div class="card tab-content' + (client.status !== 'pending' ? ' active' : '') + '" id="tab-finance"><h3>Créditer le compte</h3><div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap"><div class="form-row" style="margin:0;flex:1;min-width:15rem"><label>Montant ($)</label><input type="number" id="credit-amount" step="0.01" min="0.01"></div><button class="btn btn-success" onclick="creditAccount(\'' + client.id + '\')">Créditer</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Solde actuel: <strong style="color:#ef4350">$' + bal + '</strong></h3></div>';
+            html += '<div class="card tab-content" id="tab-withdrawals"><h3>Demandes de retrait</h3><div id="withdrawals-list"><div class="empty-state">Chargement...</div></div></div>';
+            html += '<div class="card tab-content" id="tab-messages"><h3>Messagerie</h3><div style="margin-bottom:1.5rem"><div class="form-row"><label>Sujet</label><input type="text" id="msg-subject" placeholder="Sujet du message"></div><div class="form-row"><label>Message</label><textarea id="msg-body" placeholder="Écrivez votre message..."></textarea></div><button class="btn" onclick="sendMessage(\'' + client.id + '\')">Envoyer le message</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Messages envoyés</h3><div id="messages-list"><div class="empty-state">Chargement...</div></div></div>';
+            document.getElementById('main-content').innerHTML = html;
+            loadWithdrawals(client.id);
+            loadMessages(client.id);
+        });
+    }
+    function switchTab(btn, tabId) {
+        var parent = btn.parentElement;
+        var tabs = parent.querySelectorAll('button');
+        tabs.forEach(function(t) { t.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+        document.getElementById('tab-' + tabId).classList.add('active');
+    }
+    function activateAccount(id) {
+        var password = document.getElementById('activate-password').value;
+        if (!password) { toast('Veuillez définir un mot de passe', 'error'); return; }
+        api('/api/admin/clients/' + id + '/activate', { method: 'PUT', body: JSON.stringify({ password: password }) }).then(function(data) {
+            if (data.success) { toast('Compte activé avec succès. Mot de passe: ' + password); showClient(id); }
+        });
+    }
+    function creditAccount(id) {
+        var amount = document.getElementById('credit-amount').value;
+        if (!amount || Number(amount) <= 0) { toast('Montant invalide', 'error'); return; }
+        api('/api/admin/clients/' + id + '/credit', { method: 'PUT', body: JSON.stringify({ amount: Number(amount) }) }).then(function(data) {
+            if (data.success) { toast('Compte crédité de $' + Number(amount).toFixed(2) + '. Nouveau solde: $' + data.balance.toFixed(2)); document.getElementById('credit-amount').value = ''; showClient(id); }
+        });
+    }
+    function loadWithdrawals(clientId) {
+        api('/api/admin/clients/' + clientId + '/withdrawals').then(function(data) {
+            var el = document.getElementById('withdrawals-list');
+            if (data.length === 0) { el.innerHTML = '<div class="empty-state">Aucune demande de retrait</div>'; return; }
+            var html = '<table><thead><tr><th>Montant</th><th>Date</th><th>Statut</th><th></th></tr></thead><tbody>';
+            data.forEach(function(w) {
+                var badge = w.status === 'approved' ? 'badge-active' : w.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
+                var label = w.status === 'approved' ? 'Approuvé' : w.status === 'rejected' ? 'Rejeté' : 'En attente';
+                html += '<tr><td><strong>$' + Number(w.amount).toFixed(2) + '</strong></td><td>' + new Date(w.created_at).toLocaleDateString() + '</td><td><span class="badge ' + badge + '">' + label + '</span></td><td class="text-right">';
+                if (w.status === 'pending') html += '<button class="btn btn-sm btn-success" onclick="validateWithdrawal(\'' + w.id + '\')">Approuver</button>';
+                else html += '<span style="color:#999;font-size:1.1rem">—</span>';
+                html += '</td></tr>';
+            });
+            el.innerHTML = html + '</tbody></table>';
+        });
+    }
+    function validateWithdrawal(id) {
+        api('/api/admin/withdrawals/' + id + '/validate', { method: 'PUT' }).then(function(data) {
+            if (data.success) { toast('Retrait approuvé'); if (currentClient) loadWithdrawals(currentClient.id); }
+        });
+    }
+    function sendMessage(clientId) {
+        var subject = document.getElementById('msg-subject').value.trim();
+        var body = document.getElementById('msg-body').value.trim();
+        if (!subject || !body) { toast('Veuillez remplir le sujet et le message', 'error'); return; }
+        api('/api/admin/messages', { method: 'POST', body: JSON.stringify({ client_id: clientId, subject: subject, body: body }) }).then(function(data) {
+            if (data.success) { toast('Message envoyé au client'); document.getElementById('msg-subject').value = ''; document.getElementById('msg-body').value = ''; loadMessages(clientId); }
+        });
+    }
+    function loadMessages(clientId) {
+        api('/api/messages/' + clientId).then(function(data) {
+            var el = document.getElementById('messages-list');
+            if (data.length === 0) { el.innerHTML = '<div class="empty-state">Aucun message envoyé</div>'; return; }
+            var html = '';
+            data.forEach(function(m) { html += '<div class="msg-item"><div class="msg-subject">' + m.subject + '</div><div class="msg-body">' + m.body + '</div><div class="msg-date">' + new Date(m.created_at).toLocaleString() + '</div></div>'; });
+            el.innerHTML = html;
+        });
+    }
+    function renderBroadcast() {
+        var main = document.getElementById('main-content');
+        main.innerHTML = '<div class="card"><h2>Diffuser un message à tous les clients</h2><p style="margin-bottom:2rem;color:#666;">Ce message sera envoyé à l\'ensemble des clients enregistrés.</p><div class="form-row"><label>Sujet</label><input type="text" id="broadcast-subject" placeholder="Sujet du message"></div><div class="form-row"><label>Message</label><textarea id="broadcast-body" placeholder="Écrivez votre message..."></textarea></div><button class="btn btn-black" onclick="sendBroadcast()">Diffuser à tous les clients</button></div>';
+    }
+    function sendBroadcast() {
+        var subject = document.getElementById('broadcast-subject').value.trim();
+        var body = document.getElementById('broadcast-body').value.trim();
+        if (!subject || !body) { toast('Veuillez remplir le sujet et le message', 'error'); return; }
+        api('/api/admin/messages', { method: 'POST', body: JSON.stringify({ client_id: '*', subject: subject, body: body }) }).then(function(data) {
+            if (data.success) { toast('Message diffusé à tous les clients'); document.getElementById('broadcast-subject').value = ''; document.getElementById('broadcast-body').value = ''; }
+        });
+    }
+    showSection('clients');
+    </script>
+</body>
+</html>
