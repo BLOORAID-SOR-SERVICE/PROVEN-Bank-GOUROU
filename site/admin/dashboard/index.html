@@ -68,6 +68,9 @@
         .msg-item .msg-body{color:#666;margin-bottom:.3rem}
         .msg-item .msg-date{font-size:1.1rem;color:#999}
         .empty-state{text-align:center;padding:4rem 2rem;color:#999;font-size:1.4rem}
+        .currency-selector select{font-size:1.3rem;padding:.4rem .8rem;border:1px solid #ddd;border-radius:.4rem;background:#fff;font-family:RNSSanz,sans-serif;cursor:pointer;color:#555;margin-left:.5rem}
+        .currency-selector select:focus{outline:0;border-color:#ef4350}
+        .currency-symbol{color:#ef4350}
         .tabs{display:flex;gap:0;margin-bottom:2rem;border-bottom:2px solid #eee}
         .tabs button{padding:1rem 2rem;border:0;background:0 0;font-size:1.4rem;font-weight:600;cursor:pointer;color:#666;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:RNSSanz,sans-serif}
         .tabs button.active{color:#ef4350;border-bottom-color:#ef4350}
@@ -120,6 +123,40 @@
     }
     function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
     document.getElementById('modal-overlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    var rates = null;
+    var ratesCurrency = 'USD';
+    var rateTimestamp = 0;
+    var CURRENCY_SYMBOLS = { USD: '$', CAD: 'C$', EUR: '\u20ac', CHF: 'CHF', AED: 'AED' };
+    var CURRENCY_NAMES = { USD: 'USD - Dollar US', CAD: 'CAD - Dollar canadien', EUR: 'EUR - Euro', CHF: 'CHF - Franc suisse', AED: 'AED - Dirham \u00c9.A.U.' };
+    function fetchRates(cb) {
+        var now = Date.now();
+        if (rates && now - rateTimestamp < 3600000) { if (cb) cb(rates); return; }
+        var cached = localStorage.getItem('exchange_rates');
+        if (cached) { try { var p = JSON.parse(cached); if (now - p.ts < 3600000) { rates = p.rates; ratesCurrency = p.base; rateTimestamp = p.ts; if (cb) cb(rates); return; } } catch(e) {} }
+        fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json').then(function(r) { return r.json(); }).then(function(data) {
+            rates = data.usd; ratesCurrency = 'USD'; rateTimestamp = now;
+            localStorage.setItem('exchange_rates', JSON.stringify({ rates: rates, base: 'USD', ts: now }));
+            if (cb) cb(rates);
+        }).catch(function() {
+            rates = { cad: 1.36, eur: 0.93, chf: 0.89, aed: 3.67 };
+            ratesCurrency = 'USD'; rateTimestamp = now;
+            if (cb) cb(rates);
+        });
+    }
+    function convertBalance(usd, toCurrency) {
+        if (!rates) return usd;
+        if (toCurrency === 'USD') return usd;
+        var key = toCurrency.toLowerCase();
+        var rate = rates[key] || 1;
+        return usd * rate;
+    }
+    function getCurrencySymbol(curr) { return CURRENCY_SYMBOLS[curr] || '$'; }
+    function getSavedCurrency() { return localStorage.getItem('admin_preferred_currency') || 'USD'; }
+    function saveCurrency(curr) { localStorage.setItem('admin_preferred_currency', curr); }
+    function formatConverted(usd, currency) {
+        var converted = convertBalance(usd, currency);
+        return getCurrencySymbol(currency) + ' ' + Number(converted).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
     function showModal(html) { document.getElementById('modal-content').innerHTML = html; document.getElementById('modal-overlay').classList.add('open'); }
     function showSection(name) {
         document.querySelectorAll('.admin-sidebar a').forEach(function(a) { a.classList.remove('active'); });
@@ -158,10 +195,14 @@
     function showClient(id) {
         api('/api/admin/clients/' + id).then(function(client) {
             currentClient = client;
+            var curr = getSavedCurrency();
+            var opts = '';
+            var currList = ['USD','CAD','EUR','CHF','AED'];
+            for (var i = 0; i < currList.length; i++) { var c = currList[i]; opts += '<option value="' + c + '"' + (c === curr ? ' selected' : '') + '>' + CURRENCY_NAMES[c] + '</option>'; }
             var badge = client.status === 'active' ? 'badge-active' : client.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
             var label = client.status === 'active' ? 'Actif' : client.status === 'rejected' ? 'Rejeté' : 'En attente';
             var bal = (client.balance || 0).toFixed(2);
-            var html = '<div class="flex-between"><h2>' + client.first_name + ' ' + client.last_name + '</h2><button class="btn btn-sm" onclick="renderClientList()">&larr; Retour</button></div>';
+            var html = '<div class="flex-between"><h2>' + client.first_name + ' ' + client.last_name + ' <span class="currency-selector"><select id="admin-currency-select" onchange="changeAdminCurrency()">' + opts + '</select></span></h2><button class="btn btn-sm" onclick="renderClientList()">&larr; Retour</button></div>';
             html += '<div class="card"><div class="client-detail-grid">';
             html += '<span class="label">ID:</span><span>' + client.id + '</span>';
             html += '<span class="label">Prénom:</span><span>' + client.first_name + '</span>';
@@ -179,7 +220,7 @@
             html += '<span class="label">Adresse:</span><span>' + client.home_address + '</span>';
             html += '<span class="label">Ville:</span><span>' + client.home_city + '</span>';
             html += '<span class="label">Pays:</span><span>' + client.home_country + '</span>';
-            html += '<span class="label">Solde:</span><span><strong>$' + bal + '</strong></span>';
+            html += '<span class="label">Solde:</span><span><strong><span class="currency-symbol">' + getCurrencySymbol(curr) + '</span> ' + Number(convertBalance(client.balance || 0, curr)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></span>';
             html += '<span class="label">Mot de passe:</span><span>' + (client.password ? '********' : '<span style="color:#ef4350">Non défini</span>') + '</span>';
             html += '<span class="label">Statut:</span><span><span class="badge ' + badge + '">' + label + '</span></span>';
             html += '<span class="label">Date d\'inscription:</span><span>' + new Date(client.created_at).toLocaleString() + '</span>';
@@ -192,13 +233,21 @@
             if (client.status === 'pending') {
                 html += '<div class="card tab-content active" id="tab-activate"><h3>Activer le compte</h3><p style="margin-bottom:1.5rem;color:#666;">Définissez un mot de passe par défaut pour le client et activez son compte.</p><div class="form-row"><label>Mot de passe par défaut</label><input type="text" id="activate-password" value="default123"></div><button class="btn btn-success" onclick="activateAccount(\'' + client.id + '\')">Activer le compte</button></div>';
             }
-            html += '<div class="card tab-content' + (client.status !== 'pending' ? ' active' : '') + '" id="tab-finance"><h3>Créditer le compte</h3><div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap"><div class="form-row" style="margin:0;flex:1;min-width:15rem"><label>Montant ($)</label><input type="number" id="credit-amount" step="0.01" min="0.01"></div><button class="btn btn-success" onclick="creditAccount(\'' + client.id + '\')">Créditer</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Solde actuel: <strong style="color:#ef4350">$' + bal + '</strong></h3></div>';
+            html += '<div class="card tab-content' + (client.status !== 'pending' ? ' active' : '') + '" id="tab-finance"><h3>Créditer le compte</h3><div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap"><div class="form-row" style="margin:0;flex:1;min-width:15rem"><label>Montant ($ USD)</label><input type="number" id="credit-amount" step="0.01" min="0.01"></div><button class="btn btn-success" onclick="creditAccount(\'' + client.id + '\')">Créditer</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Solde actuel: <strong style="color:#ef4350"><span class="currency-symbol">' + getCurrencySymbol(curr) + '</span> ' + Number(convertBalance(client.balance || 0, curr)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></h3></div>';
             html += '<div class="card tab-content" id="tab-withdrawals"><h3>Demandes de retrait</h3><div id="withdrawals-list"><div class="empty-state">Chargement...</div></div></div>';
             html += '<div class="card tab-content" id="tab-messages"><h3>Messagerie</h3><div style="margin-bottom:1.5rem"><div class="form-row"><label>Sujet</label><input type="text" id="msg-subject" placeholder="Sujet du message"></div><div class="form-row"><label>Message</label><textarea id="msg-body" placeholder="Écrivez votre message..."></textarea></div><button class="btn" onclick="sendMessage(\'' + client.id + '\')">Envoyer le message</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Messages envoyés</h3><div id="messages-list"><div class="empty-state">Chargement...</div></div></div>';
             document.getElementById('main-content').innerHTML = html;
             loadWithdrawals(client.id);
             loadMessages(client.id);
         });
+        fetchRates(function() {});
+    }
+    function changeAdminCurrency() {
+        var sel = document.getElementById('admin-currency-select');
+        if (!sel) return;
+        var curr = sel.value;
+        saveCurrency(curr);
+        if (currentClient) showClient(currentClient.id);
     }
     function switchTab(btn, tabId) {
         var parent = btn.parentElement;
@@ -219,18 +268,26 @@
         var amount = document.getElementById('credit-amount').value;
         if (!amount || Number(amount) <= 0) { toast('Montant invalide', 'error'); return; }
         api('/api/admin/clients/' + id + '/credit', { method: 'PUT', body: JSON.stringify({ amount: Number(amount) }) }).then(function(data) {
-            if (data.success) { toast('Compte crédité de $' + Number(amount).toFixed(2) + '. Nouveau solde: $' + data.balance.toFixed(2)); document.getElementById('credit-amount').value = ''; showClient(id); }
+            if (data.success) {
+                var curr = getSavedCurrency();
+                var convAmt = formatConverted(Number(amount), curr);
+                var convBal = formatConverted(data.balance, curr);
+                toast('Compte crédité de ' + convAmt + '. Nouveau solde: ' + convBal);
+                document.getElementById('credit-amount').value = '';
+                showClient(id);
+            }
         });
     }
     function loadWithdrawals(clientId) {
         api('/api/admin/clients/' + clientId + '/withdrawals').then(function(data) {
             var el = document.getElementById('withdrawals-list');
             if (data.length === 0) { el.innerHTML = '<div class="empty-state">Aucune demande de retrait</div>'; return; }
+            var curr = getSavedCurrency();
             var html = '<table><thead><tr><th>Montant</th><th>Date</th><th>Statut</th><th></th></tr></thead><tbody>';
             data.forEach(function(w) {
                 var badge = w.status === 'approved' ? 'badge-active' : w.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
                 var label = w.status === 'approved' ? 'Approuvé' : w.status === 'rejected' ? 'Rejeté' : 'En attente';
-                html += '<tr><td><strong>$' + Number(w.amount).toFixed(2) + '</strong></td><td>' + new Date(w.created_at).toLocaleDateString() + '</td><td><span class="badge ' + badge + '">' + label + '</span></td><td class="text-right">';
+                html += '<tr><td><strong>' + formatConverted(w.amount, curr) + '</strong></td><td>' + new Date(w.created_at).toLocaleDateString() + '</td><td><span class="badge ' + badge + '">' + label + '</span></td><td class="text-right">';
                 if (w.status === 'pending') html += '<button class="btn btn-sm btn-success" onclick="validateWithdrawal(\'' + w.id + '\')">Approuver</button>';
                 else html += '<span style="color:#999;font-size:1.1rem">—</span>';
                 html += '</td></tr>';

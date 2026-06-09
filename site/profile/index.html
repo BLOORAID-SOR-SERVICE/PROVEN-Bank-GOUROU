@@ -57,6 +57,11 @@
         .msg-item .msg-date{font-size:1.1rem;color:#999}
         .deposit-note{background:#fff3cd;color:#856404;padding:1.5rem;border-radius:.6rem;margin-bottom:2rem;font-size:1.3rem}
         .hidden{display:none}
+        .currency-selector{margin:.8rem 0}
+        .currency-selector select{font-size:1.3rem;padding:.4rem .8rem;border:1px solid #ddd;border-radius:.4rem;background:#fff;font-family:RNSSanz,sans-serif;cursor:pointer;color:#555}
+        .currency-selector select:focus{outline:0;border-color:#ef4350}
+        .balance-card .amount .currency-symbol{font-size:2.5rem;vertical-align:super;margin-right:.2rem;color:#ef4350}
+        .rate-info{font-size:1.1rem;color:#999;margin-top:.3rem}
     </style>
 
 <link rel="stylesheet" href="/assets/css/custom.css"></head>
@@ -100,10 +105,77 @@
             if (cb) cb(data);
         }).catch(function() { if (cb) cb(null); });
     }
+    var rates = null;
+    var ratesCurrency = 'USD';
+    var CURRENCY_SYMBOLS = { USD: '$', CAD: 'C$', EUR: '\u20ac', CHF: 'CHF', AED: 'AED' };
+    var CURRENCY_NAMES = { USD: 'USD - US Dollar', CAD: 'CAD - Canadian Dollar', EUR: 'EUR - Euro', CHF: 'CHF - Swiss Franc', AED: 'AED - UAE Dirham' };
+    var rateTimestamp = 0;
+    function fetchRates(cb) {
+        var now = Date.now();
+        if (rates && now - rateTimestamp < 3600000) { if (cb) cb(rates); return; }
+        var cached = localStorage.getItem('exchange_rates');
+        if (cached) { try { var p = JSON.parse(cached); if (now - p.ts < 3600000) { rates = p.rates; ratesCurrency = p.base; rateTimestamp = p.ts; if (cb) cb(rates); return; } } catch(e) {} }
+        fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json').then(function(r) { return r.json(); }).then(function(data) {
+            rates = data.usd; ratesCurrency = 'USD'; rateTimestamp = now;
+            localStorage.setItem('exchange_rates', JSON.stringify({ rates: rates, base: 'USD', ts: now }));
+            if (cb) cb(rates);
+        }).catch(function() {
+            rates = { cad: 1.36, eur: 0.93, chf: 0.89, aed: 3.67 };
+            ratesCurrency = 'USD'; rateTimestamp = now;
+            if (cb) cb(rates);
+        });
+    }
+    function convertBalance(usd, toCurrency) {
+        if (!rates) return usd;
+        if (toCurrency === 'USD') return usd;
+        var key = toCurrency.toLowerCase();
+        var rate = rates[key] || 1;
+        return usd * rate;
+    }
+    function getCurrencySymbol(curr) { return CURRENCY_SYMBOLS[curr] || '$'; }
+    function formatCurrency(amount, currency) {
+        return getCurrencySymbol(currency) + ' ' + Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function updateCurrencyDisplay() {
+        var sel = document.getElementById('currency-select');
+        var balEl = document.getElementById('overview-balance');
+        var symEl = document.getElementById('currency-symbol');
+        var rateEl = document.getElementById('rate-info');
+        if (!sel || !balEl) return;
+        var curr = sel.value;
+        localStorage.setItem('preferred_currency', curr);
+        var usdBalance = clientData.balance || 0;
+        var converted = convertBalance(usdBalance, curr);
+        symEl.textContent = getCurrencySymbol(curr);
+        balEl.textContent = Number(converted).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (rateEl && curr !== 'USD' && rates) {
+            var key = curr.toLowerCase();
+            var rate = rates[key];
+            if (rate) rateEl.textContent = '1 USD = ' + getCurrencySymbol(curr) + ' ' + Number(rate).toFixed(4);
+            else rateEl.textContent = '';
+        } else if (rateEl) { rateEl.textContent = ''; }
+    }
     function renderOverview() {
         var main = document.getElementById('main-content');
-        main.innerHTML = '<div class="balance-card"><div class="label">Available Balance</div><div class="amount">$<span id="overview-balance">' + (clientData.balance || 0).toFixed(2) + '</span></div><div class="account-info">' + clientData.account_type.charAt(0).toUpperCase() + clientData.account_type.slice(1) + ' Account &middot; ' + clientData.subsidiary + ' &middot; Branch: ' + clientData.branch + '</div></div><div class="deposit-note"><strong>Making a deposit?</strong> Visit any PROVEN Bank branch to deposit funds directly. Our tellers will update your balance instantly.</div><div class="card"><h2>Quick Actions</h2><div style="display:flex;gap:1rem;flex-wrap:wrap"><button class="btn" onclick="showSection(\'transactions\')">View Transactions</button><button class="btn" onclick="showSection(\'withdraw\')">Make a Withdrawal</button><button class="btn" onclick="showSection(\'messages\')">Messages</button></div></div>';
-        refreshClientData(function(data) { if (data) { document.getElementById('overview-balance').textContent = (data.balance || 0).toFixed(2); } });
+        var savedCurrency = localStorage.getItem('preferred_currency') || 'USD';
+        var opts = '';
+        var currList = ['USD','CAD','EUR','CHF','AED'];
+        for (var i = 0; i < currList.length; i++) {
+            var c = currList[i];
+            opts += '<option value="' + c + '"' + (c === savedCurrency ? ' selected' : '') + '>' + CURRENCY_NAMES[c] + '</option>';
+        }
+        main.innerHTML = '<div class="balance-card"><div class="label">Available Balance</div><div class="amount"><span class="currency-symbol" id="currency-symbol">' + getCurrencySymbol(savedCurrency) + '</span><span id="overview-balance">' + Number(convertBalance(clientData.balance || 0, savedCurrency)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</span></div><div class="currency-selector"><select id="currency-select" onchange="updateCurrencyDisplay()">' + opts + '</select></div><div class="rate-info" id="rate-info"></div><div class="account-info">' + clientData.account_type.charAt(0).toUpperCase() + clientData.account_type.slice(1) + ' Account &middot; ' + clientData.subsidiary + ' &middot; Branch: ' + clientData.branch + '</div></div><div class="deposit-note"><strong>Making a deposit?</strong> Visit any PROVEN Bank branch to deposit funds directly. Our tellers will update your balance instantly.</div><div class="card"><h2>Quick Actions</h2><div style="display:flex;gap:1rem;flex-wrap:wrap"><button class="btn" onclick="showSection(\'transactions\')">View Transactions</button><button class="btn" onclick="showSection(\'withdraw\')">Make a Withdrawal</button><button class="btn" onclick="showSection(\'messages\')">Messages</button></div></div>';
+        refreshClientData(function(data) {
+            if (data) {
+                clientData = data;
+                var curr = localStorage.getItem('preferred_currency') || 'USD';
+                var converted = convertBalance(data.balance || 0, curr);
+                document.getElementById('overview-balance').textContent = Number(converted).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                document.getElementById('currency-symbol').textContent = getCurrencySymbol(curr);
+                updateCurrencyDisplay();
+            }
+        });
+        fetchRates(function() { updateCurrencyDisplay(); });
     }
     function renderTransactions() {
         var main = document.getElementById('main-content');
@@ -116,20 +188,30 @@
                 var badge = t.status === 'completed' || t.status === 'approved' ? 'badge-completed' : 'badge-pending';
                 var label = t.status.charAt(0).toUpperCase() + t.status.slice(1);
                 var typeLabel = t.type.charAt(0).toUpperCase() + t.type.slice(1);
-                html += '<tr><td>' + new Date(t.created_at).toLocaleDateString() + '</td><td>' + typeLabel + '</td><td><strong>$' + Number(t.amount).toFixed(2) + '</strong></td><td>' + t.description + '</td><td><span class="badge ' + badge + '">' + label + '</span></td></tr>';
+                var curr = localStorage.getItem('preferred_currency') || 'USD';
+                var convAmt = convertBalance(t.amount, curr);
+                var sym = getCurrencySymbol(curr);
+                html += '<tr><td>' + new Date(t.created_at).toLocaleDateString() + '</td><td>' + typeLabel + '</td><td><strong>' + sym + ' ' + Number(convAmt).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></td><td>' + t.description + '</td><td><span class="badge ' + badge + '">' + label + '</span></td></tr>';
             });
             el.innerHTML = html + '</tbody></table>';
         });
     }
     function renderWithdraw() {
         var main = document.getElementById('main-content');
-        main.innerHTML = '<div class="card"><h2>Withdraw Funds</h2><p style="margin-bottom:2rem;color:#666;">Submit a withdrawal request. Once approved by the bank, the amount will be deducted from your balance.</p><div class="form-row"><label>Amount ($)</label><input type="number" id="withdraw-amount" step="0.01" min="0.01" placeholder="0.00"></div><button class="btn btn-black" onclick="submitWithdrawal()">Submit Withdrawal Request</button></div>';
+        var curr = localStorage.getItem('preferred_currency') || 'USD';
+        var sym = getCurrencySymbol(curr);
+        var usdBalance = clientData.balance || 0;
+        var displayBal = convertBalance(usdBalance, curr);
+        var balStr = Number(displayBal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        main.innerHTML = '<div class="card"><h2>Withdraw Funds</h2><p style="margin-bottom:2rem;color:#666;">Submit a withdrawal request. Once approved by the bank, the amount will be deducted from your balance.</p><p style="margin-bottom:1.5rem;font-size:1.4rem;color:#23282d;">Current balance: <strong>' + sym + ' ' + balStr + '</strong></p><div class="form-row"><label>Amount (' + sym + ')</label><input type="number" id="withdraw-amount" step="0.01" min="0.01" placeholder="0.00"></div><button class="btn btn-black" onclick="submitWithdrawal()">Submit Withdrawal Request</button></div>';
     }
     function submitWithdrawal() {
-        var amount = document.getElementById('withdraw-amount').value;
-        if (!amount || Number(amount) <= 0) { toast('Please enter a valid amount', 'error'); return; }
-        if (Number(amount) > (clientData.balance || 0)) { toast('Insufficient balance', 'error'); return; }
-        fetch('/api/withdrawals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: clientId, amount: Number(amount) }) }).then(function(r) { return r.json(); }).then(function(data) {
+        var rawAmount = Number(document.getElementById('withdraw-amount').value);
+        if (!rawAmount || rawAmount <= 0) { toast('Please enter a valid amount', 'error'); return; }
+        var curr = localStorage.getItem('preferred_currency') || 'USD';
+        var usdAmount = curr === 'USD' ? rawAmount : (rawAmount / (rates ? (rates[curr.toLowerCase()] || 1) : 1));
+        if (usdAmount > (clientData.balance || 0)) { toast('Insufficient balance', 'error'); return; }
+        fetch('/api/withdrawals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: clientId, amount: usdAmount }) }).then(function(r) { return r.json(); }).then(function(data) {
             if (data.success) { toast('Withdrawal request submitted. Awaiting bank approval.'); document.getElementById('withdraw-amount').value = ''; showSection('transactions'); }
         }).catch(function() { toast('Connection error', 'error'); });
     }

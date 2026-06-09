@@ -4,13 +4,17 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', 'site');
 const PORT = Number(process.env.PORT) || 3000;
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 const db = new Database(process.env.DB_PATH || path.join(__dirname, 'data', 'proven.db'));
 db.pragma('journal_mode = WAL');
+
+try { db.exec('ALTER TABLE clients ADD COLUMN identity_document TEXT'); } catch {}
+try { db.exec('ALTER TABLE clients ADD COLUMN residence_certificate TEXT'); } catch {}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS clients (
@@ -20,6 +24,7 @@ db.exec(`
     username TEXT UNIQUE, account_type TEXT, corporate_full_name TEXT,
     subsidiary TEXT, branch TEXT, home_address TEXT, home_city TEXT, home_country TEXT,
     status TEXT DEFAULT 'pending', balance REAL DEFAULT 0, password TEXT,
+    identity_document TEXT, residence_certificate TEXT,
     created_at TEXT DEFAULT (datetime('now'))
   );
   CREATE TABLE IF NOT EXISTS messages (
@@ -78,19 +83,31 @@ app.post('/api/admin/login', (req, res) => {
   res.status(401).json({ error: 'Invalid credentials' });
 });
 
+function saveBase64File(dataUrl) {
+  if (!dataUrl || !dataUrl.startsWith('data:')) return null;
+  const matches = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!matches) return null;
+  const ext = matches[1].split('/')[1] || 'bin';
+  const filename = Date.now() + '-' + crypto.randomBytes(8).toString('hex') + '.' + ext;
+  fs.writeFileSync(path.join(UPLOADS_DIR, filename), matches[2], 'base64');
+  return filename;
+}
+
 /* ─── Registration ─── */
 app.post('/api/register', (req, res) => {
   const id = crypto.randomUUID();
   const created = new Date().toISOString();
+  const identityDoc = saveBase64File(req.body.identity_document);
+  const residenceCert = saveBase64File(req.body.residence_certificate);
   try {
-    db.prepare(`INSERT INTO clients (id, first_name, last_name, date_of_birth, passport_number, email, telephone, cellphone, username, account_type, corporate_full_name, subsidiary, branch, home_address, home_city, home_country, status, balance, password, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',0,NULL,?)`).run(
+    db.prepare(`INSERT INTO clients (id, first_name, last_name, date_of_birth, passport_number, email, telephone, cellphone, username, account_type, corporate_full_name, subsidiary, branch, home_address, home_city, home_country, identity_document, residence_certificate, status, balance, password, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',0,NULL,?)`).run(
       id, req.body.first_name, req.body.last_name, req.body.date_of_birth,
       req.body.passport_number, req.body.email, req.body.telephone, req.body.cellphone,
       req.body.username, req.body.account_type, req.body.corporate_full_name || null,
       req.body.subsidiary, req.body.branch, req.body.home_address, req.body.home_city,
-      req.body.home_country, created
+      req.body.home_country, identityDoc, residenceCert, created
     );
-    res.json({ success: true, client: { id, ...req.body, status: 'pending', balance: 0 } });
+    res.json({ success: true, client: { id, ...req.body, identity_document: identityDoc, residence_certificate: residenceCert, status: 'pending', balance: 0 } });
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
@@ -108,7 +125,7 @@ app.post('/api/client/login', (req, res) => {
 
 /* ─── Client profile update ─── */
 app.put('/api/client/profile/:id', (req, res) => {
-  const allowed = ['first_name','last_name','date_of_birth','passport_number','email','telephone','cellphone','home_address','home_city','home_country','branch'];
+  const allowed = ['first_name','last_name','date_of_birth','passport_number','email','telephone','cellphone','home_address','home_city','home_country','branch','identity_document','residence_certificate'];
   const sets = allowed.filter(f => req.body[f] !== undefined).map(f => `${f} = ?`).join(', ');
   const vals = allowed.filter(f => req.body[f] !== undefined).map(f => req.body[f]);
   if (req.body.new_password && req.body.new_password.length >= 4) {
@@ -214,6 +231,7 @@ app.post('/api/admin/messages', requireAdmin, (req, res) => {
 
 /* ─── Static files ─── */
 app.use(express.static(ROOT, { extensions: ['html'], index: ['index.html'] }));
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 app.listen(PORT, () => {
   console.log(`PROVEN Bank site: http://localhost:${PORT}/`);

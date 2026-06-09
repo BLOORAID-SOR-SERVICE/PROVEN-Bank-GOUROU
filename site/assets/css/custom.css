@@ -27,3 +27,24 @@
 .login-form__go:hover{background:#d93a45}
 .login-form__register{display:block;text-align:center;font-size:1.2rem;color:#ef4350;text-decoration:none}
 .login-form__register:hover{text-decoration:underline}
+.file-label{display:block;font-size:1.4rem;font-weight:600;color:#23282d;margin-bottom:.5rem}
+.file-label .required-star{color:#ef4350}
+.file-label .optional-text{font-weight:400;color:#999;font-size:1.2rem}
+.form-row input[type=file]{width:100%;padding:.8rem 0;font-family:RNSSanz,sans-serif}
+.flag-dropdown-wrapper{position:relative;border-bottom:2px solid #23282d}
+.flag-dropdown-hidden{position:absolute;opacity:0;pointer-events:none;height:0;width:0}
+.flag-dropdown-trigger{display:flex;align-items:center;gap:.8rem;padding:.8rem 0;cursor:pointer;user-select:none}
+.flag-dropdown-selected-flag{width:24px;height:18px;object-fit:cover;border-radius:2px}
+.flag-dropdown-selected-text{flex:1;font-family:RNSSanz,sans-serif;font-size:1.5rem;color:#23282d}
+.flag-dropdown-arrow{font-size:1rem;color:#999;transition:.2s}
+.flag-dropdown-list{position:absolute;top:100%;left:0;right:0;z-index:100;background:#fff;border:1px solid #ddd;border-radius:.4rem;box-shadow:0 4px 12px rgba(0,0,0,.1);max-height:28rem;display:flex;flex-direction:column}
+.flag-dropdown-search{width:100%;padding:.8rem 1rem;border:0;border-bottom:1px solid #eee;font-family:RNSSanz,sans-serif;font-size:1.3rem;outline:0;box-sizing:border-box}
+.flag-dropdown-options{overflow-y:auto;flex:1}
+.flag-dropdown-option{display:flex;align-items:center;gap:.8rem;padding:.6rem 1rem;cursor:pointer;font-family:RNSSanz,sans-serif;font-size:1.3rem;color:#23282d;transition:background .15s}
+.flag-dropdown-option:hover{background:#f5f5f5}
+.flag-dropdown-option-flag{width:20px;height:15px;object-fit:cover;border-radius:2px;flex-shrink:0}
+.form-row .iti{width:100%}
+.form-row .iti input{font-family:RNSSanz,sans-serif!important;font-size:1.5rem!important;border:0!important;box-shadow:none!important;background:0 0!important;margin:0!important;padding:.8rem 0 .8rem 52px!important;width:100%!important}
+.form-row .iti__country-list{z-index:101}
+.form input[type=number]::-webkit-inner-spin-button,.form input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.form input[type=number]{-moz-appearance:textfield}
