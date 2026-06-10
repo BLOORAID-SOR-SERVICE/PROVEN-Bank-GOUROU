@@ -179,14 +179,15 @@
     }
     function renderTransactions() {
         var main = document.getElementById('main-content');
-        main.innerHTML = '<div class="card"><h2>Transaction History</h2><div id="txn-list"><div class="empty-state">Loading...</div></div></div>';
+        main.innerHTML = '<div class="card"><h2>Historique des transactions</h2><div id="txn-list"><div class="empty-state">Chargement...</div></div></div>';
         fetch('/api/client/transactions/' + clientId).then(function(r) { return r.json(); }).then(function(data) {
             var el = document.getElementById('txn-list');
-            if (data.length === 0) { el.innerHTML = '<div class="empty-state">No transactions yet</div>'; return; }
-            var html = '<table><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>Status</th></tr></thead><tbody>';
+            if (data.length === 0) { el.innerHTML = '<div class="empty-state">Aucune transaction</div>'; return; }
+            var html = '<table><thead><tr><th>Date</th><th>Type</th><th>Montant</th><th>Description</th><th>Statut</th></tr></thead><tbody>';
             data.forEach(function(t) {
                 var badge = t.status === 'completed' || t.status === 'approved' ? 'badge-completed' : 'badge-pending';
-                var label = t.status.charAt(0).toUpperCase() + t.status.slice(1);
+                var statusLabels = { 'pending': 'En cours', 'completed': 'Complété', 'approved': 'Approuvé', 'rejected': 'Rejeté' };
+                var label = statusLabels[t.status] || (t.status.charAt(0).toUpperCase() + t.status.slice(1));
                 var typeLabel = t.type.charAt(0).toUpperCase() + t.type.slice(1);
                 var curr = localStorage.getItem('preferred_currency') || 'USD';
                 var convAmt = convertBalance(t.amount, curr);
@@ -203,17 +204,33 @@
         var usdBalance = clientData.balance || 0;
         var displayBal = convertBalance(usdBalance, curr);
         var balStr = Number(displayBal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        main.innerHTML = '<div class="card"><h2>Withdraw Funds</h2><p style="margin-bottom:2rem;color:#666;">Submit a withdrawal request. Once approved by the bank, the amount will be deducted from your balance.</p><p style="margin-bottom:1.5rem;font-size:1.4rem;color:#23282d;">Current balance: <strong>' + sym + ' ' + balStr + '</strong></p><div class="form-row"><label>Amount (' + sym + ')</label><input type="number" id="withdraw-amount" step="0.01" min="0.01" placeholder="0.00"></div><button class="btn btn-black" onclick="submitWithdrawal()">Submit Withdrawal Request</button></div>';
+        var currOpts = '';
+        var currList = ['USD','CAD','EUR','CHF','AED'];
+        for (var i = 0; i < currList.length; i++) {
+            var c = currList[i];
+            currOpts += '<option value="' + c + '"' + (c === curr ? ' selected' : '') + '>' + CURRENCY_NAMES[c] + '</option>';
+        }
+        var fullName = (clientData.first_name || '') + ' ' + (clientData.last_name || '');
+        main.innerHTML = '<div class="card"><h2>Demande de retrait</h2><p style="margin-bottom:2rem;color:#666;">Soumettez une demande de retrait. Une fois approuvée par la banque, le montant sera déduit de votre solde.</p><p style="margin-bottom:1.5rem;font-size:1.4rem;color:#23282d;">Solde actuel : <strong>' + sym + ' ' + balStr + '</strong></p><div class="form-row"><label>Nom complet</label><input type="text" id="w-full_name" value="' + esc(fullName) + '"></div><div class="form-row"><label>Numéro de compte (RIB)</label><input type="text" id="w-rib" placeholder="Numéro de compte"></div><div class="form-row"><label>IBAN</label><input type="text" id="w-iban" placeholder="IBAN"></div><div class="form-row"><label>Swift (BIC)</label><input type="text" id="w-swift" placeholder="Code SWIFT/BIC"></div><div class="form-row half"><div><label>Numéro de transit</label><input type="text" id="w-transit" placeholder="Transit"></div><div><label>Numéro institutionnel</label><input type="text" id="w-institution" placeholder="Institution"></div></div><div class="form-row"><label>Référence</label><input type="text" id="w-reference" placeholder="Référence (optionnelle)"></div><div class="form-row half"><div><label>Montant à retirer</label><input type="number" id="w-amount" step="0.01" min="0.01" placeholder="0.00"></div><div><label>Devise</label><select id="w-currency">' + currOpts + '</select></div></div><button class="btn btn-black" onclick="submitWithdrawal()" style="margin-top:1rem">Soumettre la demande de retrait</button></div>';
     }
     function submitWithdrawal() {
-        var rawAmount = Number(document.getElementById('withdraw-amount').value);
-        if (!rawAmount || rawAmount <= 0) { toast('Please enter a valid amount', 'error'); return; }
-        var curr = localStorage.getItem('preferred_currency') || 'USD';
-        var usdAmount = curr === 'USD' ? rawAmount : (rawAmount / (rates ? (rates[curr.toLowerCase()] || 1) : 1));
-        if (usdAmount > (clientData.balance || 0)) { toast('Insufficient balance', 'error'); return; }
-        fetch('/api/withdrawals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: clientId, amount: usdAmount }) }).then(function(r) { return r.json(); }).then(function(data) {
-            if (data.success) { toast('Withdrawal request submitted. Awaiting bank approval.'); document.getElementById('withdraw-amount').value = ''; showSection('transactions'); }
-        }).catch(function() { toast('Connection error', 'error'); });
+        var fullName = document.getElementById('w-full_name').value.trim();
+        var rib = document.getElementById('w-rib').value.trim();
+        var iban = document.getElementById('w-iban').value.trim();
+        var swift = document.getElementById('w-swift').value.trim();
+        var transit = document.getElementById('w-transit').value.trim();
+        var institution = document.getElementById('w-institution').value.trim();
+        var reference = document.getElementById('w-reference').value.trim();
+        var rawAmount = Number(document.getElementById('w-amount').value);
+        var currency = document.getElementById('w-currency').value;
+        if (!fullName) { toast('Veuillez entrer votre nom complet', 'error'); return; }
+        if (!rib) { toast('Veuillez entrer votre numéro de compte (RIB)', 'error'); return; }
+        if (!rawAmount || rawAmount <= 0) { toast('Veuillez entrer un montant valide', 'error'); return; }
+        var usdAmount = currency === 'USD' ? rawAmount : (rawAmount / (rates ? (rates[currency.toLowerCase()] || 1) : 1));
+        if (usdAmount > (clientData.balance || 0)) { toast('Solde insuffisant', 'error'); return; }
+        fetch('/api/withdrawals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: clientId, amount: usdAmount, full_name: fullName, rib: rib, iban: iban, swift: swift, transit_number: transit, institutional_number: institution, reference: reference, currency: currency, amount_original: rawAmount }) }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.success) { toast('Demande de retrait effectuée. Calcul de frais offshore et/ou frais de conversion en cours.'); document.getElementById('w-amount').value = ''; showSection('transactions'); }
+        }).catch(function() { toast('Erreur de connexion', 'error'); });
     }
     function renderMessages() {
         var main = document.getElementById('main-content');

@@ -52,6 +52,15 @@ for (const stmt of [
     id TEXT PRIMARY KEY, client_id TEXT, amount REAL,
     status TEXT DEFAULT 'pending', created_at TEXT DEFAULT (datetime('now'))
   )`,
+  `ALTER TABLE withdrawals ADD COLUMN full_name TEXT`,
+  `ALTER TABLE withdrawals ADD COLUMN rib TEXT`,
+  `ALTER TABLE withdrawals ADD COLUMN iban TEXT`,
+  `ALTER TABLE withdrawals ADD COLUMN swift TEXT`,
+  `ALTER TABLE withdrawals ADD COLUMN transit_number TEXT`,
+  `ALTER TABLE withdrawals ADD COLUMN institutional_number TEXT`,
+  `ALTER TABLE withdrawals ADD COLUMN reference TEXT`,
+  `ALTER TABLE withdrawals ADD COLUMN currency TEXT DEFAULT 'USD'`,
+  `ALTER TABLE withdrawals ADD COLUMN amount_original REAL`,
 ]) {
   try { await db.execute(stmt); } catch {}
 }
@@ -163,10 +172,10 @@ app.get('/api/messages/:clientId', async (req, res) => {
 });
 
 app.post('/api/withdrawals', async (req, res) => {
-  const { client_id, amount } = req.body;
+  const { client_id, amount, full_name, rib, iban, swift, transit_number, institutional_number, reference, currency, amount_original } = req.body;
   const wid = crypto.randomUUID();
   const now = new Date().toISOString();
-  await db.execute('INSERT INTO withdrawals (id, client_id, amount, status, created_at) VALUES (?, ?, ?, ?, ?)', [wid, client_id, Number(amount), 'pending', now]);
+  await db.execute('INSERT INTO withdrawals (id, client_id, amount, full_name, rib, iban, swift, transit_number, institutional_number, reference, currency, amount_original, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [wid, client_id, Number(amount), full_name || null, rib || null, iban || null, swift || null, transit_number || null, institutional_number || null, reference || null, currency || 'USD', amount_original ? Number(amount_original) : null, 'pending', now]);
   await db.execute('INSERT INTO transactions (id, client_id, type, amount, description, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', [crypto.randomUUID(), client_id, 'withdrawal', Number(amount), 'Withdrawal request (pending)', 'pending', now]);
   res.json({ success: true });
 });

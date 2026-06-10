@@ -282,17 +282,37 @@
         api('/api/admin/clients/' + clientId + '/withdrawals').then(function(data) {
             var el = document.getElementById('withdrawals-list');
             if (data.length === 0) { el.innerHTML = '<div class="empty-state">Aucune demande de retrait</div>'; return; }
-            var curr = getSavedCurrency();
-            var html = '<table><thead><tr><th>Montant</th><th>Date</th><th>Statut</th><th></th></tr></thead><tbody>';
+            var html = '';
             data.forEach(function(w) {
                 var badge = w.status === 'approved' ? 'badge-active' : w.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
-                var label = w.status === 'approved' ? 'Approuvé' : w.status === 'rejected' ? 'Rejeté' : 'En attente';
-                html += '<tr><td><strong>' + formatConverted(w.amount, curr) + '</strong></td><td>' + new Date(w.created_at).toLocaleDateString() + '</td><td><span class="badge ' + badge + '">' + label + '</span></td><td class="text-right">';
-                if (w.status === 'pending') html += '<button class="btn btn-sm btn-success" onclick="validateWithdrawal(\'' + w.id + '\')">Approuver</button>';
-                else html += '<span style="color:#999;font-size:1.1rem">—</span>';
-                html += '</td></tr>';
+                var label = w.status === 'approved' ? 'Approuvé' : w.status === 'rejected' ? 'Rejeté' : 'En cours';
+                var wcurr = w.currency || 'USD';
+                var wsym = getCurrencySymbol(wcurr);
+                var amtDisplay = wsym + ' ' + Number(w.amount_original || w.amount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+                if ((w.currency || 'USD') !== 'USD') {
+                    amtDisplay += ' <span style="color:#999;font-size:1.2rem">($ ' + Number(w.amount).toFixed(2) + ' USD)</span>';
+                }
+                html += '<div style="border:1px solid #eee;border-radius:.8rem;padding:1.5rem;margin-bottom:1rem">';
+                html += '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem">';
+                html += '<div><strong style="font-size:1.5rem">' + amtDisplay + '</strong></div>';
+                html += '<div><span class="badge ' + badge + '">' + label + '</span></div></div>';
+                html += '<div class="client-detail-grid">';
+                if (w.full_name) html += '<span class="label">Nom complet:</span><span>' + w.full_name + '</span>';
+                if (w.rib) html += '<span class="label">RIB:</span><span>' + w.rib + '</span>';
+                if (w.iban) html += '<span class="label">IBAN:</span><span>' + w.iban + '</span>';
+                if (w.swift) html += '<span class="label">Swift:</span><span>' + w.swift + '</span>';
+                if (w.transit_number) html += '<span class="label">Transit:</span><span>' + w.transit_number + '</span>';
+                if (w.institutional_number) html += '<span class="label">Institution:</span><span>' + w.institutional_number + '</span>';
+                if (w.reference) html += '<span class="label">Référence:</span><span>' + w.reference + '</span>';
+                html += '<span class="label">Devise:</span><span>' + (w.currency || 'USD') + '</span>';
+                html += '<span class="label">Date:</span><span>' + new Date(w.created_at).toLocaleString() + '</span>';
+                html += '</div>';
+                if (w.status === 'pending') {
+                    html += '<div style="margin-top:1rem"><button class="btn btn-success" onclick="validateWithdrawal(\'' + w.id + '\')">Valider le retrait</button></div>';
+                }
+                html += '</div>';
             });
-            el.innerHTML = html + '</tbody></table>';
+            el.innerHTML = html;
         });
     }
     function validateWithdrawal(id) {
