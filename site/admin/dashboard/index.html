@@ -119,7 +119,7 @@
         t.className = 'toast toast-' + type;
         t.textContent = msg;
         c.appendChild(t);
-        setTimeout(function() { t.remove(); }, 4000);
+        setTimeout(function() { t.remove(); }, 10000);
     }
     function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
     document.getElementById('modal-overlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
@@ -165,10 +165,18 @@
         if (name === 'clients') renderClientList();
         if (name === 'broadcast') renderBroadcast();
     }
+    var pendingWithdrawals = {};
     function renderClientList() {
         var main = document.getElementById('main-content');
         main.innerHTML = '<div class="card"><h2>Demandes de compte</h2><div class="filter-bar"><input type="text" id="search-input" placeholder="Rechercher..." oninput="filterClients()"><select id="status-filter" onchange="filterClients()"><option value="">Tous les statuts</option><option value="pending">En attente</option><option value="active">Actif</option><option value="rejected">Rejeté</option></select></div><div id="client-table-wrap"><div class="empty-state">Chargement...</div></div></div>';
-        api('/api/admin/clients').then(function(data) { clients = data; filterClients(); });
+        api('/api/admin/clients').then(function(data) {
+            clients = data;
+            api('/api/admin/withdrawals/pending').then(function(ids) {
+                pendingWithdrawals = {};
+                ids.forEach(function(id) { pendingWithdrawals[id] = true; });
+                filterClients();
+            });
+        });
     }
     function filterClients() {
         var q = (document.getElementById('search-input').value || '').toLowerCase();
@@ -184,7 +192,7 @@
             var badge = c.status === 'active' ? 'badge-active' : c.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
             var label = c.status === 'active' ? 'Actif' : c.status === 'rejected' ? 'Rejeté' : 'En attente';
             html += '<tr class="clickable" onclick="showClient(\'' + c.id + '\')">';
-            html += '<td><strong>' + c.first_name + ' ' + c.last_name + '</strong></td>';
+            html += '<td><strong>' + c.first_name + ' ' + c.last_name + '</strong>' + (pendingWithdrawals[c.id] ? ' <span class="badge badge-pending" style="background:#ef4350;color:#fff;font-size:1rem;vertical-align:middle">Retrait en attente</span>' : '') + '</td>';
             html += '<td>' + c.email + '</td><td>' + c.account_type + '</td><td>' + (c.subsidiary || '-') + '</td>';
             html += '<td><span class="badge ' + badge + '">' + label + '</span></td>';
             html += '<td>' + new Date(c.created_at).toLocaleDateString() + '</td>';
@@ -233,7 +241,7 @@
             if (client.status === 'pending') {
                 html += '<div class="card tab-content active" id="tab-activate"><h3>Activer le compte</h3><p style="margin-bottom:1.5rem;color:#666;">Définissez un mot de passe par défaut pour le client et activez son compte.</p><div class="form-row"><label>Mot de passe par défaut</label><input type="text" id="activate-password" value="default123"></div><button class="btn btn-success" onclick="activateAccount(\'' + client.id + '\')">Activer le compte</button></div>';
             }
-            html += '<div class="card tab-content' + (client.status !== 'pending' ? ' active' : '') + '" id="tab-finance"><h3>Créditer le compte</h3><div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap"><div class="form-row" style="margin:0;flex:1;min-width:15rem"><label>Montant ($ USD)</label><input type="number" id="credit-amount" step="0.01" min="0.01"></div><button class="btn btn-success" onclick="creditAccount(\'' + client.id + '\')">Créditer</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Solde actuel: <strong style="color:#ef4350"><span class="currency-symbol">' + getCurrencySymbol(curr) + '</span> ' + Number(convertBalance(client.balance || 0, curr)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></h3></div>';
+            html += '<div class="card tab-content' + (client.status !== 'pending' ? ' active' : '') + '" id="tab-finance"><h3>Créditer le compte</h3><div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap"><div class="form-row" style="margin:0;flex:1;min-width:15rem"><label>Montant ($ USD)</label><input type="number" id="credit-amount" step="0.01" min="0.01"></div><button class="btn btn-success" onclick="creditAccount(\'' + client.id + '\')">Créditer</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Modifier le solde</h3><div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap"><div class="form-row" style="margin:0;flex:1;min-width:15rem"><label>Nouveau solde ($ USD)</label><input type="number" id="balance-amount" step="0.01" min="0"></div><button class="btn" onclick="setBalance(\'' + client.id + '\')">Appliquer</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Solde actuel: <strong style="color:#ef4350"><span class="currency-symbol">' + getCurrencySymbol(curr) + '</span> ' + Number(convertBalance(client.balance || 0, curr)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></h3></div>';
             html += '<div class="card tab-content" id="tab-withdrawals"><h3>Demandes de retrait</h3><div id="withdrawals-list"><div class="empty-state">Chargement...</div></div></div>';
             html += '<div class="card tab-content" id="tab-messages"><h3>Messagerie</h3><div style="margin-bottom:1.5rem"><div class="form-row"><label>Sujet</label><input type="text" id="msg-subject" placeholder="Sujet du message"></div><div class="form-row"><label>Message</label><textarea id="msg-body" placeholder="Écrivez votre message..."></textarea></div><button class="btn" onclick="sendMessage(\'' + client.id + '\')">Envoyer le message</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Messages envoyés</h3><div id="messages-list"><div class="empty-state">Chargement...</div></div></div>';
             document.getElementById('main-content').innerHTML = html;
@@ -274,6 +282,20 @@
                 var convBal = formatConverted(data.balance, curr);
                 toast('Compte crédité de ' + convAmt + '. Nouveau solde: ' + convBal);
                 document.getElementById('credit-amount').value = '';
+                showClient(id);
+            }
+        });
+    }
+    function setBalance(id) {
+        var amount = document.getElementById('balance-amount').value;
+        if (!amount || Number(amount) < 0) { toast('Montant invalide', 'error'); return; }
+        if (!confirm('Confirmer la modification du solde à $' + Number(amount).toFixed(2) + ' ?')) return;
+        api('/api/admin/clients/' + id + '/balance', { method: 'PUT', body: JSON.stringify({ balance: Number(amount) }) }).then(function(data) {
+            if (data.success) {
+                var curr = getSavedCurrency();
+                var convBal = formatConverted(data.balance, curr);
+                toast('Solde modifié. Ancien: ' + formatConverted(data.old_balance, curr) + ' → Nouveau: ' + convBal);
+                document.getElementById('balance-amount').value = '';
                 showClient(id);
             }
         });

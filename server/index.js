@@ -226,6 +226,27 @@ app.put('/api/admin/clients/:id/credit', requireAdmin, async (req, res) => {
   res.json({ success: true, balance: updated.balance });
 });
 
+app.put('/api/admin/clients/:id/balance', requireAdmin, async (req, res) => {
+  const newBalance = Number(req.body.balance);
+  const result = await db.execute('SELECT * FROM clients WHERE id = ?', [req.params.id]);
+  const client = row(result, 0);
+  if (!client) return res.status(404).json({ error: 'Not found' });
+  const oldBalance = client.balance;
+  await db.execute('UPDATE clients SET balance = ? WHERE id = ?', [newBalance, req.params.id]);
+  const diff = newBalance - oldBalance;
+  const txnType = diff >= 0 ? 'deposit' : 'withdrawal';
+  await db.execute('INSERT INTO transactions (id, client_id, type, amount, description, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', [crypto.randomUUID(), req.params.id, txnType, Math.abs(diff), 'Balance adjustment by admin', 'completed', new Date().toISOString()]);
+  const updatedResult = await db.execute('SELECT balance FROM clients WHERE id = ?', [req.params.id]);
+  const updated = row(updatedResult, 0);
+  res.json({ success: true, balance: updated.balance, old_balance: oldBalance });
+});
+
+app.get('/api/admin/withdrawals/pending', requireAdmin, async (req, res) => {
+  const result = await db.execute("SELECT client_id FROM withdrawals WHERE status = 'pending'");
+  const ids = rows(result).map(r => r.client_id);
+  res.json(ids);
+});
+
 app.get('/api/admin/clients/:id/withdrawals', requireAdmin, async (req, res) => {
   const result = await db.execute('SELECT * FROM withdrawals WHERE client_id = ? ORDER BY created_at DESC', [req.params.id]);
   res.json(rows(result));
