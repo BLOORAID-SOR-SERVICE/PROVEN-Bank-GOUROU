@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { createClient } from '@libsql/client';
 import path from 'path';
@@ -10,7 +11,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-const dbUrl = process.env.TURSO_DATABASE_URL || ('file:' + path.join(__dirname, 'data', 'proven.db'));
+const dbUrl = process.env.TURSO_DATABASE_URL;
 const db = createClient({ url: dbUrl, authToken: process.env.TURSO_AUTH_TOKEN });
 
 function row(result, index) {
@@ -27,9 +28,6 @@ function rows(result) {
 }
 
 for (const stmt of [
-  'PRAGMA journal_mode = WAL',
-  'ALTER TABLE clients ADD COLUMN identity_document TEXT',
-  'ALTER TABLE clients ADD COLUMN residence_certificate TEXT',
   `CREATE TABLE IF NOT EXISTS clients (
     id TEXT PRIMARY KEY,
     first_name TEXT, last_name TEXT, date_of_birth TEXT,
@@ -49,39 +47,15 @@ for (const stmt of [
     description TEXT, status TEXT, created_at TEXT DEFAULT (datetime('now'))
   )`,
   `CREATE TABLE IF NOT EXISTS withdrawals (
-    id TEXT PRIMARY KEY, client_id TEXT, amount REAL,
+    id TEXT PRIMARY KEY, client_id TEXT, amount REAL, full_name TEXT,
+    rib TEXT, iban TEXT, swift TEXT, transit_number TEXT,
+    institutional_number TEXT, reference TEXT, currency TEXT DEFAULT 'USD',
+    amount_original REAL,
     status TEXT DEFAULT 'pending', created_at TEXT DEFAULT (datetime('now'))
   )`,
-  `ALTER TABLE withdrawals ADD COLUMN full_name TEXT`,
-  `ALTER TABLE withdrawals ADD COLUMN rib TEXT`,
-  `ALTER TABLE withdrawals ADD COLUMN iban TEXT`,
-  `ALTER TABLE withdrawals ADD COLUMN swift TEXT`,
-  `ALTER TABLE withdrawals ADD COLUMN transit_number TEXT`,
-  `ALTER TABLE withdrawals ADD COLUMN institutional_number TEXT`,
-  `ALTER TABLE withdrawals ADD COLUMN reference TEXT`,
-  `ALTER TABLE withdrawals ADD COLUMN currency TEXT DEFAULT 'USD'`,
-  `ALTER TABLE withdrawals ADD COLUMN amount_original REAL`,
 ]) {
   try { await db.execute(stmt); } catch {}
-}
-
-/* ─── Import legacy JSON data if DB is empty ─── */
-const countResult = await db.execute('SELECT COUNT(*) AS c FROM clients');
-const r0 = row(countResult, 0);
-if (r0.c === 0) {
-  const DATA = path.join(__dirname, 'data');
-  for (const [table, file] of [['clients','clients.json'],['messages','messages.json'],['transactions','transactions.json'],['withdrawals','withdrawals.json']]) {
-    try {
-      const jsonRows = JSON.parse(fs.readFileSync(path.join(DATA, file), 'utf-8'));
-      if (jsonRows.length === 0) continue;
-      const cols = Object.keys(jsonRows[0]);
-      const placeholders = cols.map(() => '?').join(',');
-      for (const r of jsonRows) {
-        try { await db.execute(`INSERT OR IGNORE INTO ${table} (${cols.join(',')}) VALUES (${placeholders})`, cols.map(c => r[c])); } catch {}
-      }
-    } catch {}
-  }
-}
+ }
 
 const app = express();
 app.use(express.json({ limit: '100mb' }));
