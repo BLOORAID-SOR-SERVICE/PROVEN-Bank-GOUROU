@@ -32,6 +32,8 @@
 .file-label .optional-text{font-weight:400;color:#999;font-size:1.2rem}
 .form-row input[type=file]{width:100%;padding:.8rem 0;font-family:RNSSanz,sans-serif}
 .flag-dropdown-wrapper{position:relative;border-bottom:2px solid #23282d}
+.page-content__inner,.content-column__inner{overflow:visible}
+.register-form{overflow:visible!important}
 .flag-dropdown-hidden{position:absolute;opacity:0;pointer-events:none;height:0;width:0}
 .flag-dropdown-trigger{display:flex;align-items:center;gap:.8rem;padding:.8rem 0;cursor:pointer;user-select:none}
 .flag-dropdown-selected-flag{width:24px;height:18px;object-fit:cover;border-radius:2px}
