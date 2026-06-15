@@ -35,7 +35,7 @@ for (const stmt of [
     first_name TEXT, last_name TEXT, date_of_birth TEXT,
     passport_number TEXT, email TEXT, telephone TEXT, cellphone TEXT,
     username TEXT UNIQUE, account_type TEXT, corporate_full_name TEXT,
-    subsidiary TEXT, branch TEXT, home_address TEXT, home_city TEXT, home_country TEXT,
+    subsidiary TEXT, home_city TEXT, home_country TEXT,
     status TEXT DEFAULT 'pending', balance REAL DEFAULT 0, password TEXT,
     identity_document TEXT, residence_certificate TEXT,
     created_at TEXT DEFAULT (datetime('now'))
@@ -84,7 +84,7 @@ if (r0.c === 0) {
 }
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '100mb' }));
 
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
@@ -125,11 +125,11 @@ app.post('/api/register', async (req, res) => {
   const residenceCert = saveBase64File(req.body.residence_certificate);
   try {
     await db.execute(
-      `INSERT INTO clients (id, first_name, last_name, date_of_birth, passport_number, email, telephone, cellphone, username, account_type, corporate_full_name, subsidiary, branch, home_address, home_city, home_country, identity_document, residence_certificate, status, balance, password, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',0,NULL,?)`,
+      `INSERT INTO clients (id, first_name, last_name, date_of_birth, passport_number, email, telephone, cellphone, username, account_type, corporate_full_name, subsidiary, home_city, home_country, identity_document, residence_certificate, status, balance, password, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',0,NULL,?)`,
       [id, v(req.body.first_name), v(req.body.last_name), v(req.body.date_of_birth),
        v(req.body.passport_number), v(req.body.email), v(req.body.telephone), v(req.body.cellphone),
        v(req.body.username), v(req.body.account_type), v(req.body.corporate_full_name),
-       v(req.body.subsidiary), v(req.body.branch), v(req.body.home_address), v(req.body.home_city),
+       v(req.body.subsidiary), v(req.body.home_city),
        v(req.body.home_country), identityDoc, residenceCert, created]
     );
     res.json({ success: true, client: { id, ...req.body, identity_document: identityDoc, residence_certificate: residenceCert, status: 'pending', balance: 0 } });
@@ -140,7 +140,7 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/client/login', async (req, res) => {
   const { username, password } = req.body;
-  const result = await db.execute('SELECT * FROM clients WHERE username = ? AND password = ?', [username, password]);
+  const result = await db.execute('SELECT * FROM clients WHERE (username = ? OR email = ?) AND password = ?', [username, username, password]);
   const client = row(result, 0);
   if (!client) return res.status(401).json({ error: 'Invalid credentials' });
   if (client.status !== 'active') return res.status(403).json({ error: 'Account not activated' });
@@ -149,7 +149,7 @@ app.post('/api/client/login', async (req, res) => {
 });
 
 app.put('/api/client/profile/:id', async (req, res) => {
-  const allowed = ['first_name','last_name','date_of_birth','passport_number','email','telephone','cellphone','home_address','home_city','home_country','branch','identity_document','residence_certificate'];
+  const allowed = ['first_name','last_name','date_of_birth','passport_number','email','telephone','cellphone','home_city','home_country','identity_document','residence_certificate'];
   const sets = allowed.filter(f => req.body[f] !== undefined).map(f => `${f} = ?`).join(', ');
   const vals = allowed.filter(f => req.body[f] !== undefined).map(f => v(req.body[f]));
   if (req.body.new_password && req.body.new_password.length >= 4) {

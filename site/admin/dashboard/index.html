@@ -224,14 +224,14 @@
             html += '<span class="label">Type de compte:</span><span>' + client.account_type + '</span>';
             if (client.corporate_full_name) html += '<span class="label">Raison sociale:</span><span>' + client.corporate_full_name + '</span>';
             html += '<span class="label">Subsidiary:</span><span>' + client.subsidiary + '</span>';
-            html += '<span class="label">Branch:</span><span>' + client.branch + '</span>';
-            html += '<span class="label">Adresse:</span><span>' + client.home_address + '</span>';
             html += '<span class="label">Ville:</span><span>' + client.home_city + '</span>';
             html += '<span class="label">Pays:</span><span>' + client.home_country + '</span>';
             html += '<span class="label">Solde:</span><span><strong><span class="currency-symbol">' + getCurrencySymbol(curr) + '</span> ' + Number(convertBalance(client.balance || 0, curr)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></span>';
             html += '<span class="label">Mot de passe:</span><span>' + (client.password ? '********' : '<span style="color:#ef4350">Non défini</span>') + '</span>';
             html += '<span class="label">Statut:</span><span><span class="badge ' + badge + '">' + label + '</span></span>';
             html += '<span class="label">Date d\'inscription:</span><span>' + new Date(client.created_at).toLocaleString() + '</span>';
+            if (client.identity_document) html += '<span class="label">Pièce d\'identité:</span><span><a href="/uploads/' + client.identity_document + '" target="_blank" class="btn btn-sm">Voir le document</a></span>';
+            if (client.residence_certificate) html += '<span class="label">Certificat de résidence:</span><span><a href="/uploads/' + client.residence_certificate + '" target="_blank" class="btn btn-sm">Voir le document</a></span>';
             html += '</div></div>';
             html += '<div class="tabs">';
             if (client.status === 'pending') html += '<button class="active" onclick="switchTab(this,\'activate\')">Activation</button>';
