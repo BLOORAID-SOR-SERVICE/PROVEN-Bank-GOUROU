@@ -28,33 +28,33 @@
     <div class="admin-login">
         <div class="admin-logo">PROVEN</div>
         <h1>Admin Access</h1>
-        <p>Connectez-vous pour accéder au panneau d'administration</p>
-        <div class="error" id="login-error">Identifiants incorrects</div>
+        <p>Log in to access the administration panel</p>
+        <div class="error" id="login-error">Invalid credentials</div>
         <form id="login-form" onsubmit="return false;">
             <div class="form-row">
-                <input type="text" id="username" name="username" placeholder="Nom d'utilisateur" required>
+                <input type="text" id="username" name="username" placeholder="Username" required>
             </div>
             <div class="form-row">
-                <input type="password" id="password" name="password" placeholder="Mot de passe" required>
+                <input type="password" id="password" name="password" placeholder="Password" required>
             </div>
             <div class="form-bottom" style="justify-content:center">
-                <button type="submit" class="button black" onclick="adminLogin()"><a>Se connecter</a></button>
+                <button type="submit" class="button black" onclick="adminLogin()"><a>Sign In</a></button>
             </div>
         </form>
-        <a class="back-link" href="/">&larr; Retour au site</a>
+        <a class="back-link" href="/">&larr; Back to site</a>
     </div>
     <script>
     async function adminLogin() {
         var err = document.getElementById('login-error');
         var username = document.getElementById('username').value.trim();
         var password = document.getElementById('password').value.trim();
-        if (!username || !password) { err.style.display = 'block'; err.textContent = 'Veuillez remplir tous les champs'; return; }
+        if (!username || !password) { err.style.display = 'block'; err.textContent = 'Please fill in all fields'; return; }
         try {
             var res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
             var data = await res.json();
             if (res.ok) { localStorage.setItem('admin_token', data.token); window.location.href = '/admin/dashboard/'; }
-            else { err.style.display = 'block'; err.textContent = data.error || 'Identifiants incorrects'; }
-        } catch(e) { err.style.display = 'block'; err.textContent = 'Erreur de connexion au serveur'; }
+            else { err.style.display = 'block'; err.textContent = data.error || 'Invalid credentials'; }
+        } catch(e) { err.style.display = 'block'; err.textContent = 'Server connection error'; }
     }
     </script>
 </body>

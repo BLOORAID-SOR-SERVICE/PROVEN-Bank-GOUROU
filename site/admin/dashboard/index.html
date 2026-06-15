@@ -83,13 +83,13 @@
 <link rel="stylesheet" href="/assets/css/custom.css"></head>
 <body>
     <div class="admin-header">
-        <h1>PROVEN <span>Bank</span> — Administration</h1>
-        <a class="logout" onclick="logout()">Déconnexion</a>
+        <h1>PROVEN <span>Bank</span> — Admin</h1>
+        <a class="logout" onclick="logout()">Sign Out</a>
     </div>
     <div class="admin-layout">
         <nav class="admin-sidebar">
             <a href="#" class="active" onclick="showSection('clients')">Clients</a>
-            <a href="#" onclick="showSection('broadcast')">Diffusion</a>
+            <a href="#" onclick="showSection('broadcast')">Broadcast</a>
         </nav>
         <main class="admin-main" id="main-content">
         </main>
@@ -127,7 +127,7 @@
     var ratesCurrency = 'USD';
     var rateTimestamp = 0;
     var CURRENCY_SYMBOLS = { USD: '$', CAD: 'C$', EUR: '\u20ac', CHF: 'CHF', AED: 'AED' };
-    var CURRENCY_NAMES = { USD: 'USD - Dollar US', CAD: 'CAD - Dollar canadien', EUR: 'EUR - Euro', CHF: 'CHF - Franc suisse', AED: 'AED - Dirham \u00c9.A.U.' };
+    var CURRENCY_NAMES = { USD: 'USD - US Dollar', CAD: 'CAD - Canadian Dollar', EUR: 'EUR - Euro', CHF: 'CHF - Swiss Franc', AED: 'AED - UAE Dirham' };
     function fetchRates(cb) {
         var now = Date.now();
         if (rates && now - rateTimestamp < 3600000) { if (cb) cb(rates); return; }
@@ -168,7 +168,7 @@
     var pendingWithdrawals = {};
     function renderClientList() {
         var main = document.getElementById('main-content');
-        main.innerHTML = '<div class="card"><h2>Demandes de compte</h2><div class="filter-bar"><input type="text" id="search-input" placeholder="Rechercher..." oninput="filterClients()"><select id="status-filter" onchange="filterClients()"><option value="">Tous les statuts</option><option value="pending">En attente</option><option value="active">Actif</option><option value="rejected">Rejeté</option></select></div><div id="client-table-wrap"><div class="empty-state">Chargement...</div></div></div>';
+        main.innerHTML = '<div class="card"><h2>Account Requests</h2><div class="filter-bar"><input type="text" id="search-input" placeholder="Search..." oninput="filterClients()"><select id="status-filter" onchange="filterClients()"><option value="">All statuses</option><option value="pending">Pending</option><option value="active">Active</option><option value="rejected">Rejected</option></select></div><div id="client-table-wrap"><div class="empty-state">Loading...</div></div></div>';
         api('/api/admin/clients').then(function(data) {
             clients = data;
             api('/api/admin/withdrawals/pending').then(function(ids) {
@@ -186,17 +186,17 @@
             if (s && c.status !== s) match = false;
             return match;
         });
-        if (filtered.length === 0) { document.getElementById('client-table-wrap').innerHTML = '<div class="empty-state">Aucun client trouvé</div>'; return; }
-        var html = '<table><thead><tr><th>Nom</th><th>Email</th><th>Compte</th><th>Type</th><th>Statut</th><th>Date</th><th></th></tr></thead><tbody>';
+        if (filtered.length === 0) { document.getElementById('client-table-wrap').innerHTML = '<div class="empty-state">No clients found</div>'; return; }
+        var html = '<table><thead><tr><th>Name</th><th>Email</th><th>Account</th><th>Type</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>';
         filtered.forEach(function(c) {
             var badge = c.status === 'active' ? 'badge-active' : c.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
-            var label = c.status === 'active' ? 'Actif' : c.status === 'rejected' ? 'Rejeté' : 'En attente';
+            var label = c.status === 'active' ? 'Active' : c.status === 'rejected' ? 'Rejected' : 'Pending';
             html += '<tr class="clickable" onclick="showClient(\'' + c.id + '\')">';
-            html += '<td><strong>' + c.first_name + ' ' + c.last_name + '</strong>' + (pendingWithdrawals[c.id] ? ' <span class="badge badge-pending" style="background:#ef4350;color:#fff;font-size:1rem;vertical-align:middle">Retrait en attente</span>' : '') + '</td>';
+            html += '<td><strong>' + c.first_name + ' ' + c.last_name + '</strong>' + (pendingWithdrawals[c.id] ? ' <span class="badge badge-pending" style="background:#ef4350;color:#fff;font-size:1rem;vertical-align:middle">Pending withdrawal</span>' : '') + '</td>';
             html += '<td>' + c.email + '</td><td>' + c.account_type + '</td><td>' + (c.subsidiary || '-') + '</td>';
             html += '<td><span class="badge ' + badge + '">' + label + '</span></td>';
             html += '<td>' + new Date(c.created_at).toLocaleDateString() + '</td>';
-            html += '<td><button class="btn btn-sm" onclick="event.stopPropagation();showClient(\'' + c.id + '\')">Détails</button></td></tr>';
+            html += '<td><button class="btn btn-sm" onclick="event.stopPropagation();showClient(\'' + c.id + '\')">Details</button></td></tr>';
         });
         document.getElementById('client-table-wrap').innerHTML = html + '</tbody></table>';
     }
@@ -208,42 +208,42 @@
             var currList = ['USD','CAD','EUR','CHF','AED'];
             for (var i = 0; i < currList.length; i++) { var c = currList[i]; opts += '<option value="' + c + '"' + (c === curr ? ' selected' : '') + '>' + CURRENCY_NAMES[c] + '</option>'; }
             var badge = client.status === 'active' ? 'badge-active' : client.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
-            var label = client.status === 'active' ? 'Actif' : client.status === 'rejected' ? 'Rejeté' : 'En attente';
+            var label = client.status === 'active' ? 'Active' : client.status === 'rejected' ? 'Rejected' : 'Pending';
             var bal = (client.balance || 0).toFixed(2);
-            var html = '<div class="flex-between"><h2>' + client.first_name + ' ' + client.last_name + ' <span class="currency-selector"><select id="admin-currency-select" onchange="changeAdminCurrency()">' + opts + '</select></span></h2><button class="btn btn-sm" onclick="renderClientList()">&larr; Retour</button></div>';
+            var html = '<div class="flex-between"><h2>' + client.first_name + ' ' + client.last_name + ' <span class="currency-selector"><select id="admin-currency-select" onchange="changeAdminCurrency()">' + opts + '</select></span></h2><button class="btn btn-sm" onclick="renderClientList()">&larr; Back</button></div>';
             html += '<div class="card"><div class="client-detail-grid">';
             html += '<span class="label">ID:</span><span>' + client.id + '</span>';
-            html += '<span class="label">Prénom:</span><span>' + client.first_name + '</span>';
-            html += '<span class="label">Nom:</span><span>' + client.last_name + '</span>';
-            html += '<span class="label">Date de naissance:</span><span>' + client.date_of_birth + '</span>';
+            html += '<span class="label">First Name:</span><span>' + client.first_name + '</span>';
+            html += '<span class="label">Last Name:</span><span>' + client.last_name + '</span>';
+            html += '<span class="label">Date of Birth:</span><span>' + client.date_of_birth + '</span>';
             html += '<span class="label">Passport:</span><span>' + client.passport_number + '</span>';
             html += '<span class="label">Email:</span><span>' + client.email + '</span>';
-            html += '<span class="label">Téléphone:</span><span>' + client.telephone + '</span>';
-            html += '<span class="label">Cellulaire:</span><span>' + client.cellphone + '</span>';
+            html += '<span class="label">Telephone:</span><span>' + client.telephone + '</span>';
+            html += '<span class="label">Cellphone:</span><span>' + client.cellphone + '</span>';
             html += '<span class="label">Username:</span><span>' + client.username + '</span>';
-            html += '<span class="label">Type de compte:</span><span>' + client.account_type + '</span>';
-            if (client.corporate_full_name) html += '<span class="label">Raison sociale:</span><span>' + client.corporate_full_name + '</span>';
+            html += '<span class="label">Account Type:</span><span>' + client.account_type + '</span>';
+            if (client.corporate_full_name) html += '<span class="label">Company Name:</span><span>' + client.corporate_full_name + '</span>';
             html += '<span class="label">Subsidiary:</span><span>' + client.subsidiary + '</span>';
-            html += '<span class="label">Ville:</span><span>' + client.home_city + '</span>';
-            html += '<span class="label">Pays:</span><span>' + client.home_country + '</span>';
-            html += '<span class="label">Solde:</span><span><strong><span class="currency-symbol">' + getCurrencySymbol(curr) + '</span> ' + Number(convertBalance(client.balance || 0, curr)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></span>';
-            html += '<span class="label">Mot de passe:</span><span>' + (client.password ? '********' : '<span style="color:#ef4350">Non défini</span>') + '</span>';
-            html += '<span class="label">Statut:</span><span><span class="badge ' + badge + '">' + label + '</span></span>';
-            html += '<span class="label">Date d\'inscription:</span><span>' + new Date(client.created_at).toLocaleString() + '</span>';
-            if (client.identity_document) html += '<span class="label">Pièce d\'identité:</span><span><a href="/uploads/' + client.identity_document + '" target="_blank" class="btn btn-sm">Voir le document</a></span>';
-            if (client.residence_certificate) html += '<span class="label">Certificat de résidence:</span><span><a href="/uploads/' + client.residence_certificate + '" target="_blank" class="btn btn-sm">Voir le document</a></span>';
+            html += '<span class="label">City:</span><span>' + client.home_city + '</span>';
+            html += '<span class="label">Country:</span><span>' + client.home_country + '</span>';
+            html += '<span class="label">Balance:</span><span><strong><span class="currency-symbol">' + getCurrencySymbol(curr) + '</span> ' + Number(convertBalance(client.balance || 0, curr)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></span>';
+            html += '<span class="label">Password:</span><span>' + (client.password ? '********' : '<span style="color:#ef4350">Not set</span>') + '</span>';
+            html += '<span class="label">Status:</span><span><span class="badge ' + badge + '">' + label + '</span></span>';
+            html += '<span class="label">Registered:</span><span>' + new Date(client.created_at).toLocaleString() + '</span>';
+            if (client.identity_document) html += '<span class="label">ID Document:</span><span><a href="/uploads/' + client.identity_document + '" target="_blank" class="btn btn-sm">View Document</a></span>';
+            if (client.residence_certificate) html += '<span class="label">Residence Cert:</span><span><a href="/uploads/' + client.residence_certificate + '" target="_blank" class="btn btn-sm">View Document</a></span>';
             html += '</div></div>';
             html += '<div class="tabs">';
-            if (client.status === 'pending') html += '<button class="active" onclick="switchTab(this,\'activate\')">Activation</button>';
+            if (client.status === 'pending') html += '<button class="active" onclick="switchTab(this,\'activate\')">Activate</button>';
             html += '<button' + (client.status !== 'pending' ? ' class="active"' : '') + ' onclick="switchTab(this,\'finance\')">Finance</button>';
-            html += '<button onclick="switchTab(this,\'withdrawals\')">Retraits</button>';
-            html += '<button onclick="switchTab(this,\'messages\')">Messagerie</button></div>';
+            html += '<button onclick="switchTab(this,\'withdrawals\')">Withdrawals</button>';
+            html += '<button onclick="switchTab(this,\'messages\')">Messaging</button></div>';
             if (client.status === 'pending') {
-                html += '<div class="card tab-content active" id="tab-activate"><h3>Activer le compte</h3><p style="margin-bottom:1.5rem;color:#666;">Définissez un mot de passe par défaut pour le client et activez son compte.</p><div class="form-row"><label>Mot de passe par défaut</label><input type="text" id="activate-password" value="default123"></div><button class="btn btn-success" onclick="activateAccount(\'' + client.id + '\')">Activer le compte</button></div>';
+                html += '<div class="card tab-content active" id="tab-activate"><h3>Activate Account</h3><p style="margin-bottom:1.5rem;color:#666;">Set a default password for the client and activate their account.</p><div class="form-row"><label>Default Password</label><input type="text" id="activate-password" value="default123"></div><button class="btn btn-success" onclick="activateAccount(\'' + client.id + '\')">Activate Account</button></div>';
             }
-            html += '<div class="card tab-content' + (client.status !== 'pending' ? ' active' : '') + '" id="tab-finance"><h3>Créditer le compte</h3><div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap"><div class="form-row" style="margin:0;flex:1;min-width:15rem"><label>Montant ($ USD)</label><input type="number" id="credit-amount" step="0.01" min="0.01"></div><button class="btn btn-success" onclick="creditAccount(\'' + client.id + '\')">Créditer</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Modifier le solde</h3><div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap"><div class="form-row" style="margin:0;flex:1;min-width:15rem"><label>Nouveau solde ($ USD)</label><input type="number" id="balance-amount" step="0.01" min="0"></div><button class="btn" onclick="setBalance(\'' + client.id + '\')">Appliquer</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Solde actuel: <strong style="color:#ef4350"><span class="currency-symbol">' + getCurrencySymbol(curr) + '</span> ' + Number(convertBalance(client.balance || 0, curr)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></h3></div>';
-            html += '<div class="card tab-content" id="tab-withdrawals"><h3>Demandes de retrait</h3><div id="withdrawals-list"><div class="empty-state">Chargement...</div></div></div>';
-            html += '<div class="card tab-content" id="tab-messages"><h3>Messagerie</h3><div style="margin-bottom:1.5rem"><div class="form-row"><label>Sujet</label><input type="text" id="msg-subject" placeholder="Sujet du message"></div><div class="form-row"><label>Message</label><textarea id="msg-body" placeholder="Écrivez votre message..."></textarea></div><button class="btn" onclick="sendMessage(\'' + client.id + '\')">Envoyer le message</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Messages envoyés</h3><div id="messages-list"><div class="empty-state">Chargement...</div></div></div>';
+            html += '<div class="card tab-content' + (client.status !== 'pending' ? ' active' : '') + '" id="tab-finance"><h3>Credit Account</h3><div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap"><div class="form-row" style="margin:0;flex:1;min-width:15rem"><label>Amount ($ USD)</label><input type="number" id="credit-amount" step="0.01" min="0.01"></div><button class="btn btn-success" onclick="creditAccount(\'' + client.id + '\')">Credit</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Set Balance</h3><div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap"><div class="form-row" style="margin:0;flex:1;min-width:15rem"><label>New Balance ($ USD)</label><input type="number" id="balance-amount" step="0.01" min="0"></div><button class="btn" onclick="setBalance(\'' + client.id + '\')">Apply</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Current Balance: <strong style="color:#ef4350"><span class="currency-symbol">' + getCurrencySymbol(curr) + '</span> ' + Number(convertBalance(client.balance || 0, curr)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></h3></div>';
+            html += '<div class="card tab-content" id="tab-withdrawals"><h3>Withdrawal Requests</h3><div id="withdrawals-list"><div class="empty-state">Loading...</div></div></div>';
+            html += '<div class="card tab-content" id="tab-messages"><h3>Messaging</h3><div style="margin-bottom:1.5rem"><div class="form-row"><label>Subject</label><input type="text" id="msg-subject" placeholder="Message subject"></div><div class="form-row"><label>Message</label><textarea id="msg-body" placeholder="Write your message..."></textarea></div><button class="btn" onclick="sendMessage(\'' + client.id + '\')">Send Message</button></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3>Sent Messages</h3><div id="messages-list"><div class="empty-state">Loading...</div></div></div>';
             document.getElementById('main-content').innerHTML = html;
             loadWithdrawals(client.id);
             loadMessages(client.id);
@@ -267,20 +267,20 @@
     }
     function activateAccount(id) {
         var password = document.getElementById('activate-password').value;
-        if (!password) { toast('Veuillez définir un mot de passe', 'error'); return; }
+        if (!password) { toast('Please set a password', 'error'); return; }
         api('/api/admin/clients/' + id + '/activate', { method: 'PUT', body: JSON.stringify({ password: password }) }).then(function(data) {
-            if (data.success) { toast('Compte activé avec succès. Mot de passe: ' + password); showClient(id); }
+            if (data.success) { toast('Account activated. Password: ' + password); showClient(id); }
         });
     }
     function creditAccount(id) {
         var amount = document.getElementById('credit-amount').value;
-        if (!amount || Number(amount) <= 0) { toast('Montant invalide', 'error'); return; }
+        if (!amount || Number(amount) <= 0) { toast('Invalid amount', 'error'); return; }
         api('/api/admin/clients/' + id + '/credit', { method: 'PUT', body: JSON.stringify({ amount: Number(amount) }) }).then(function(data) {
             if (data.success) {
                 var curr = getSavedCurrency();
                 var convAmt = formatConverted(Number(amount), curr);
                 var convBal = formatConverted(data.balance, curr);
-                toast('Compte crédité de ' + convAmt + '. Nouveau solde: ' + convBal);
+                toast('Account credited ' + convAmt + '. New balance: ' + convBal);
                 document.getElementById('credit-amount').value = '';
                 showClient(id);
             }
@@ -288,13 +288,13 @@
     }
     function setBalance(id) {
         var amount = document.getElementById('balance-amount').value;
-        if (!amount || Number(amount) < 0) { toast('Montant invalide', 'error'); return; }
-        if (!confirm('Confirmer la modification du solde à $' + Number(amount).toFixed(2) + ' ?')) return;
+        if (!amount || Number(amount) < 0) { toast('Invalid amount', 'error'); return; }
+        if (!confirm('Confirm balance change to $' + Number(amount).toFixed(2) + ' ?')) return;
         api('/api/admin/clients/' + id + '/balance', { method: 'PUT', body: JSON.stringify({ balance: Number(amount) }) }).then(function(data) {
             if (data.success) {
                 var curr = getSavedCurrency();
                 var convBal = formatConverted(data.balance, curr);
-                toast('Solde modifié. Ancien: ' + formatConverted(data.old_balance, curr) + ' → Nouveau: ' + convBal);
+                toast('Balance changed. Old: ' + formatConverted(data.old_balance, curr) + ' \u2192 New: ' + convBal);
                 document.getElementById('balance-amount').value = '';
                 showClient(id);
             }
@@ -303,11 +303,11 @@
     function loadWithdrawals(clientId) {
         api('/api/admin/clients/' + clientId + '/withdrawals').then(function(data) {
             var el = document.getElementById('withdrawals-list');
-            if (data.length === 0) { el.innerHTML = '<div class="empty-state">Aucune demande de retrait</div>'; return; }
+            if (data.length === 0) { el.innerHTML = '<div class="empty-state">No withdrawal requests</div>'; return; }
             var html = '';
             data.forEach(function(w) {
                 var badge = w.status === 'approved' ? 'badge-active' : w.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
-                var label = w.status === 'approved' ? 'Approuvé' : w.status === 'rejected' ? 'Rejeté' : 'En cours';
+                var label = w.status === 'approved' ? 'Approved' : w.status === 'rejected' ? 'Rejected' : 'Pending';
                 var wcurr = w.currency || 'USD';
                 var wsym = getCurrencySymbol(wcurr);
                 var amtDisplay = wsym + ' ' + Number(w.amount_original || w.amount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -319,18 +319,18 @@
                 html += '<div><strong style="font-size:1.5rem">' + amtDisplay + '</strong></div>';
                 html += '<div><span class="badge ' + badge + '">' + label + '</span></div></div>';
                 html += '<div class="client-detail-grid">';
-                if (w.full_name) html += '<span class="label">Nom complet:</span><span>' + w.full_name + '</span>';
+                if (w.full_name) html += '<span class="label">Full Name:</span><span>' + w.full_name + '</span>';
                 if (w.rib) html += '<span class="label">RIB:</span><span>' + w.rib + '</span>';
                 if (w.iban) html += '<span class="label">IBAN:</span><span>' + w.iban + '</span>';
                 if (w.swift) html += '<span class="label">Swift:</span><span>' + w.swift + '</span>';
                 if (w.transit_number) html += '<span class="label">Transit:</span><span>' + w.transit_number + '</span>';
                 if (w.institutional_number) html += '<span class="label">Institution:</span><span>' + w.institutional_number + '</span>';
-                if (w.reference) html += '<span class="label">Référence:</span><span>' + w.reference + '</span>';
-                html += '<span class="label">Devise:</span><span>' + (w.currency || 'USD') + '</span>';
+                if (w.reference) html += '<span class="label">Reference:</span><span>' + w.reference + '</span>';
+                html += '<span class="label">Currency:</span><span>' + (w.currency || 'USD') + '</span>';
                 html += '<span class="label">Date:</span><span>' + new Date(w.created_at).toLocaleString() + '</span>';
                 html += '</div>';
                 if (w.status === 'pending') {
-                    html += '<div style="margin-top:1rem"><button class="btn btn-success" onclick="validateWithdrawal(\'' + w.id + '\')">Valider le retrait</button></div>';
+                    html += '<div style="margin-top:1rem"><button class="btn btn-success" onclick="validateWithdrawal(\'' + w.id + '\')">Approve Withdrawal</button></div>';
                 }
                 html += '</div>';
             });
@@ -339,21 +339,21 @@
     }
     function validateWithdrawal(id) {
         api('/api/admin/withdrawals/' + id + '/validate', { method: 'PUT' }).then(function(data) {
-            if (data.success) { toast('Retrait approuvé'); if (currentClient) loadWithdrawals(currentClient.id); }
+            if (data.success) { toast('Withdrawal approved'); if (currentClient) loadWithdrawals(currentClient.id); }
         });
     }
     function sendMessage(clientId) {
         var subject = document.getElementById('msg-subject').value.trim();
         var body = document.getElementById('msg-body').value.trim();
-        if (!subject || !body) { toast('Veuillez remplir le sujet et le message', 'error'); return; }
+        if (!subject || !body) { toast('Please fill in the subject and message', 'error'); return; }
         api('/api/admin/messages', { method: 'POST', body: JSON.stringify({ client_id: clientId, subject: subject, body: body }) }).then(function(data) {
-            if (data.success) { toast('Message envoyé au client'); document.getElementById('msg-subject').value = ''; document.getElementById('msg-body').value = ''; loadMessages(clientId); }
+            if (data.success) { toast('Message sent to client'); document.getElementById('msg-subject').value = ''; document.getElementById('msg-body').value = ''; loadMessages(clientId); }
         });
     }
     function loadMessages(clientId) {
         api('/api/messages/' + clientId).then(function(data) {
             var el = document.getElementById('messages-list');
-            if (data.length === 0) { el.innerHTML = '<div class="empty-state">Aucun message envoyé</div>'; return; }
+            if (data.length === 0) { el.innerHTML = '<div class="empty-state">No messages sent</div>'; return; }
             var html = '';
             data.forEach(function(m) { html += '<div class="msg-item"><div class="msg-subject">' + m.subject + '</div><div class="msg-body">' + m.body + '</div><div class="msg-date">' + new Date(m.created_at).toLocaleString() + '</div></div>'; });
             el.innerHTML = html;
@@ -361,14 +361,14 @@
     }
     function renderBroadcast() {
         var main = document.getElementById('main-content');
-        main.innerHTML = '<div class="card"><h2>Diffuser un message à tous les clients</h2><p style="margin-bottom:2rem;color:#666;">Ce message sera envoyé à l\'ensemble des clients enregistrés.</p><div class="form-row"><label>Sujet</label><input type="text" id="broadcast-subject" placeholder="Sujet du message"></div><div class="form-row"><label>Message</label><textarea id="broadcast-body" placeholder="Écrivez votre message..."></textarea></div><button class="btn btn-black" onclick="sendBroadcast()">Diffuser à tous les clients</button></div>';
+        main.innerHTML = '<div class="card"><h2>Broadcast Message to All Clients</h2><p style="margin-bottom:2rem;color:#666;">This message will be sent to all registered clients.</p><div class="form-row"><label>Subject</label><input type="text" id="broadcast-subject" placeholder="Message subject"></div><div class="form-row"><label>Message</label><textarea id="broadcast-body" placeholder="Write your message..."></textarea></div><button class="btn btn-black" onclick="sendBroadcast()">Broadcast to All Clients</button></div>';
     }
     function sendBroadcast() {
         var subject = document.getElementById('broadcast-subject').value.trim();
         var body = document.getElementById('broadcast-body').value.trim();
-        if (!subject || !body) { toast('Veuillez remplir le sujet et le message', 'error'); return; }
+        if (!subject || !body) { toast('Please fill in the subject and message', 'error'); return; }
         api('/api/admin/messages', { method: 'POST', body: JSON.stringify({ client_id: '*', subject: subject, body: body }) }).then(function(data) {
-            if (data.success) { toast('Message diffusé à tous les clients'); document.getElementById('broadcast-subject').value = ''; document.getElementById('broadcast-body').value = ''; }
+            if (data.success) { toast('Message broadcast to all clients'); document.getElementById('broadcast-subject').value = ''; document.getElementById('broadcast-body').value = ''; }
         });
     }
     showSection('clients');
