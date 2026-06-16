@@ -12,10 +12,10 @@
 .form-col{width:100%;margin-bottom:1rem}
 .form-col>input[type=email],.form-col>input[type=number],.form-col>input[type=tel],.form-col>input[type=text],.form-col>select{border-bottom:2px solid #23282d}
 .button{display:inline-block}
-.button>a,.button>button{display:inline-block;font-size:2rem;padding:1em 2em;text-align:center;-webkit-transition:.4s;transition:.4s;border:1px solid #ef4350;color:#ef4350;background:0 0;line-height:1;white-space:nowrap;font-weight:600;text-decoration:none!important;-webkit-transition:.3s;transition:.3s}
-.button>a:hover,.button>button:hover{background:#ef4350;color:#fff}
-.black.button>a,.black.button>button{color:#000;border-color:#000}
-.black.button>a:hover,.black.button>button:hover{background:#000;color:#fff}
+.button>a,.button>button,button.button{display:inline-block;font-size:2rem;padding:1em 2em;text-align:center;-webkit-transition:.4s;transition:.4s;border:1px solid #ef4350;color:#ef4350;background:0 0;line-height:1;white-space:nowrap;font-weight:600;text-decoration:none!important;cursor:pointer;font-family:inherit;-webkit-transition:.3s;transition:.3s}
+.button>a:hover,.button>button:hover,button.button:hover{background:#ef4350;color:#fff}
+.black.button>a,.black.button>button,button.black.button{color:#000;border-color:#000}
+.black.button>a:hover,.black.button>button:hover,button.black.button:hover{background:#000;color:#fff}
 .color-red{color:#ef4350}
 .header-online-banking__login-form{display:none;position:absolute;top:100%;right:0;background:#fff;padding:2rem;border-radius:1rem;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:999;min-width:28rem}
 .header-online-banking:hover .header-online-banking__login-form{display:block}

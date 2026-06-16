@@ -29,7 +29,7 @@
         <h1>Client Access</h1>
         <p>Sign in to your account</p>
         <div class="error" id="login-error">Invalid username or password</div>
-        <form id="login-form" onsubmit="return false;">
+        <form id="login-form" onsubmit="clientLogin(); return false">
             <div class="form-row">
                 <input type="text" id="username" name="username" placeholder="Username" required>
             </div>
@@ -37,11 +37,11 @@
                 <input type="password" id="password" name="password" placeholder="Password" required>
             </div>
             <div class="form-bottom" style="justify-content:center">
-                <button type="submit" class="button black" onclick="clientLogin()"><a>Sign In</a></button>
+                <button type="submit" class="button black" onclick="clientLogin()">Sign In</button>
             </div>
         </form>
         <div class="form-bottom" style="justify-content:center;margin-top:1rem">
-            <a href="/create-account/" class="button" style="font-size:1.3rem"><a>Create New Account</a></a>
+            <a href="/create-account/" class="button" style="font-size:1.3rem">Create New Account</a>
         </div>
         <a class="back-link" href="/">&larr; Back to site</a>
     </div>
