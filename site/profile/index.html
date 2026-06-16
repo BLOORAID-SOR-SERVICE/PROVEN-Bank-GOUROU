@@ -14,6 +14,9 @@
         .profile-header{background:linear-gradient(135deg,#23282d,#3a4249);color:#fff;padding:2rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
         .profile-header .greeting{font-size:1.6rem}
         .profile-header .greeting strong{color:#ef4350}
+        .profile-header__left{display:flex;align-items:center;gap:1.5rem}
+        .profile-logo{display:flex;align-items:center}
+        .profile-logo img{height:2.4rem;width:auto;display:block}
         .profile-header .logout{color:#fff;text-decoration:none;font-size:1.3rem;cursor:pointer;background:rgba(255,255,255,.1);padding:.5rem 1.2rem;border-radius:.4rem}
         .profile-header .logout:hover{background:#ef4350}
         .balance-card{background:#fff;border-radius:1rem;box-shadow:0 2px 15px rgba(0,0,0,.08);padding:2.5rem;margin-bottom:2rem;text-align:center}
@@ -67,7 +70,10 @@
 <link rel="stylesheet" href="/assets/css/custom.css"></head>
 <body>
     <div class="profile-header">
-        <div class="greeting">Welcome, <strong id="client-name">Client</strong></div>
+        <div class="profile-header__left">
+            <a class="profile-logo" href="/"><img src="/assets/img/favicon-32x32.png" alt="PROVEN Bank"></a>
+            <div class="greeting">Welcome, <strong id="client-name">Client</strong></div>
+        </div>
         <a class="logout" onclick="logout()">Sign Out</a>
     </div>
     <div class="profile-layout">
